@@ -19,6 +19,7 @@ import SimilarProducts from '../components/products/SimilarProducts';
 import { getProductById } from '../api/products/productsAPI';
 import { useRoute } from '@react-navigation/native';
 import Feather from '@expo/vector-icons/Feather';
+import LoadingScreen from './LoadingScreen';
 
 const toastConfig = {
   success: (props) => (
@@ -71,7 +72,7 @@ const ProductDetailScreen = () => {
   };
 
   if (product == null) {
-    return <Text>Đang tải...</Text>;
+    return <LoadingScreen />;
   }
 
   return (
@@ -189,10 +190,10 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: '100%',
     backgroundColor: '#fff',
-    height: 400,
+    height: 350,
     alignItems: 'center',
-    borderBottomRightRadius: 180,
-    borderBottomLeftRadius: 180,
+    borderBottomRightRadius: 120,
+    borderBottomLeftRadius: 120,
     overflow: 'hidden',
   },
   productImage: {

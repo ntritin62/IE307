@@ -29,7 +29,6 @@ const ProductCard = ({ product, onProductPress }) => {
           <Text style={styles.currentPrice}>
             {format(newPrice(product.price, product.saleOff))}
           </Text>
-          <Text style={styles.originalPrice}>{format(product.price)}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -38,16 +37,10 @@ const ProductCard = ({ product, onProductPress }) => {
 
 const styles = StyleSheet.create({
   card: {
-    width: 180,
+    width: 170,
     padding: 10,
     borderRadius: 10,
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-    margin: 10,
     minHeight: 220,
   },
   discountBadge: {
@@ -89,7 +82,7 @@ const styles = StyleSheet.create({
   currentPrice: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#000',
+    color: colors['primary-800'],
   },
   originalPrice: {
     fontSize: 11,
