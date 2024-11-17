@@ -28,3 +28,19 @@ export const getProductById = async (id) => {
     console.log(err);
   }
 };
+
+export const getProducts = async (brandName) => {
+  try {
+    const response = await axios.get(`${apiUrl}/api/v1/laptops`);
+
+    if (brandName) {
+      return response.data.laptops.filter((laptop) => {
+        return laptop.name.toLowerCase().includes(brandName.replace(/-/g, ' '));
+      });
+    }
+
+    return response.data.laptops;
+  } catch (err) {
+    console.log(err);
+  }
+};
