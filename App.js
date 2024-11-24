@@ -78,6 +78,7 @@ function BottomNavigation() {
               />
             </CustomTabIcon>
           ),
+          headerShown: false,
         }}
       />
       <BottomTab.Screen
