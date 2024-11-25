@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
@@ -23,6 +23,10 @@ import SignOutScreen from "./screens/user/SignOut";
 import { UserMenu } from "./components/user/UserMenu";
 import CustomTabIcon from "./components/ui/CustomTabIcon";
 import colors from "./constants/colors";
+import LoginScreen from "./screens/LoginScreen";
+import RegisterScreen from "./screens/RegisterScreen";
+import NonAccountScreen from "./screens/NonAccountScreen";
+import { AuthProvider, AuthContext } from "./services/AuthContext";
 
 const TopTab = createMaterialTopTabNavigator();
 const BottomTab = createBottomTabNavigator();
@@ -50,6 +54,8 @@ const AccountTabs = () => (
 
 /** Bottom Tab Navigator */
 function BottomNavigation() {
+  const { token } = useContext(AuthContext);
+
   return (
     <BottomTab.Navigator
       screenOptions={{
@@ -99,7 +105,7 @@ function BottomNavigation() {
       />
       <BottomTab.Screen
         name="Cart"
-        component={CartScreen}
+        component={token !== null ? CartScreen : NonAccountScreen}
         options={{
           title: "Giỏ hàng",
           headerTitleAlign: "center",
@@ -116,7 +122,7 @@ function BottomNavigation() {
       />
       <BottomTab.Screen
         name="Account"
-        component={AccountTabs}
+        component={token !== null ? AccountTabs : NonAccountScreen}
         options={{
           headerShown: false,
           // title: "Tài khoản", // Bạn có thể thêm title nếu cần
@@ -171,6 +177,22 @@ function StackNavigator() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{
+            title: "Đăng nhập",
+            headerTitleAlign: "center",
+          }}
+        />
+        <Stack.Screen
+          name="Register"
+          component={RegisterScreen}
+          options={{
+            title: "Đăng ký",
+            headerTitleAlign: "center",
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -178,9 +200,11 @@ function StackNavigator() {
 
 export default function App() {
   return (
-    <StripeProvider publishableKey={process.env.STRIPE_PUBLISHABLE_KEY}>
-      <StatusBar barStyle="light-content" backgroundColor="#fff" />
-      <StackNavigator />
-    </StripeProvider>
+    <AuthProvider>
+      <StripeProvider publishableKey={process.env.STRIPE_PUBLISHABLE_KEY}>
+        <StatusBar barStyle="light-content" backgroundColor="#fff" />
+        <StackNavigator />
+      </StripeProvider>
+    </AuthProvider>
   );
 }

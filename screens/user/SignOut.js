@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import { StyleSheet, View, Text, Image, TouchableOpacity } from "react-native";
+import { AuthContext } from "../../services/AuthContext";
 
-const SignOutScreen = () => {
-  const handleCancel = () => navigation.navigate("");
-  const handleSignOut = () => navigation.navigate("");
+const SignOutScreen = ({ navigation }) => {
+  const { handleSignOut } = useContext(AuthContext);
+  const handleCancel = () => navigation.navigate("Account");
 
   return (
     <View style={styles.container}>

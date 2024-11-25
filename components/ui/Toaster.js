@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import colors from '../../constants/colors';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import colors from "../../constants/colors";
 
 const Toaster = ({ title, type }) => {
   const typeColors = {
@@ -31,7 +31,11 @@ const Toaster = ({ title, type }) => {
   return (
     <View style={[styles.behind, { backgroundColor: background }]}>
       <View style={[styles.container, { borderBottomColor: border }]}>
-        <AntDesign name="checkcircle" size={30} color={icon} />
+        {type === "success" ? (
+          <AntDesign name="checkcircle" size={30} color={icon} />
+        ) : (
+          <AntDesign name="closecircle" size={30} color={icon} />
+        )}
         <Text style={[styles.title, { color: text }]}>{title}</Text>
       </View>
     </View>
@@ -43,16 +47,16 @@ const styles = StyleSheet.create({
     width: 350,
     height: 90,
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
     elevation: 10,
   },
   container: {
     height: 88,
     width: 350,
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 15,
     borderTopRightRadius: 8,
     borderTopLeftRadius: 8,
@@ -60,11 +64,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 10,
   },
   message: {
-    color: '#000',
+    color: "#000",
     fontSize: 13,
   },
 });
