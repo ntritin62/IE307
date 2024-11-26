@@ -11,6 +11,7 @@ const colors = {
 
   success: '#00E07A',
   error: '#ea3c4b',
+  info: '#2196F3',
   warning: '#FDD116',
   background: '#f2f2f2',
 };
