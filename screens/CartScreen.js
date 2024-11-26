@@ -1,104 +1,175 @@
-import React from "react";
-import { StyleSheet, View, Text, Pressable, ScrollView } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  Alert,
+  TouchableOpacity,
+  Image,
+} from "react-native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 import colors from "../constants/colors";
 import Icon from "react-native-vector-icons/FontAwesome";
 import format from "../services/formatVND";
 import CartItem from "../components/cart/CartItem";
+import { getUserCart, deleteItemInCart } from "../api/products/cartsAPI";
+import LoadingScreen from "./LoadingScreen";
+import Toast, { SuccessToast } from "react-native-toast-message";
+import Toaster from "../components/ui/Toaster";
+import emptyCartImg from "../assets/empty_cart.png";
 
-const itemList = [
-  {
-    id: 1,
-    name: "Lenovo IdeaPad Slim 5 16IMH9 83DC001RVN",
-    price: "20990000",
-    imageUrl:
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:quality(100)/2023_7_3_638239973445917567_lenovo-ideapad-slim-5-16iah8-xam-dd.jpg",
-  },
-  {
-    id: 2,
-    name: "Lenovo IdeaPad Slim 5 16IMH9 83DC001RVN",
-    price: "20990000",
-    imageUrl:
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:quality(100)/2023_7_3_638239973445917567_lenovo-ideapad-slim-5-16iah8-xam-dd.jpg",
-  },
-  {
-    id: 3,
-    name: "Lenovo IdeaPad Slim 5 16IMH9 83DC001RVN",
-    price: "20990000",
-    imageUrl:
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:quality(100)/2023_7_3_638239973445917567_lenovo-ideapad-slim-5-16iah8-xam-dd.jpg",
-  },
-  {
-    id: 4,
-    name: "Lenovo IdeaPad Slim 5 16IMH9 83DC001RVN",
-    price: "20990000",
-    imageUrl:
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:quality(100)/2023_7_3_638239973445917567_lenovo-ideapad-slim-5-16iah8-xam-dd.jpg",
-  },
-  {
-    id: 5,
-    name: "Lenovo IdeaPad Slim 5 16IMH9 83DC001RVN",
-    price: "20990000",
-    imageUrl:
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:quality(100)/2023_7_3_638239973445917567_lenovo-ideapad-slim-5-16iah8-xam-dd.jpg",
-  },
-  {
-    id: 6,
-    name: "Lenovo IdeaPad Slim 5 16IMH9 83DC001RVN",
-    price: "20990000",
-    imageUrl:
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:quality(100)/2023_7_3_638239973445917567_lenovo-ideapad-slim-5-16iah8-xam-dd.jpg",
-  },
-  {
-    id: 7,
-    name: "Lenovo IdeaPad Slim 5 16IMH9 83DC001RVN",
-    price: "20990000",
-    imageUrl:
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:quality(100)/2023_7_3_638239973445917567_lenovo-ideapad-slim-5-16iah8-xam-dd.jpg",
-  },
-];
+const toastConfig = {
+  success: (props) => (
+    <SuccessToast
+      {...props}
+      text1Style={{
+        fontSize: 25,
+        fontWeight: "700",
+      }}
+      text2Style={{
+        fontSize: 15,
+        fontWeight: "400",
+      }}
+    />
+  ),
+  successToast: ({ text1, props }) => <Toaster title={text1} type="success" />,
+};
 
 export default function CartScreen() {
   const navigation = useNavigation();
+  const [cart, setCart] = useState([]);
+  const [cartLoading, setCartLoading] = useState(true);
+  const isFocused = useIsFocused();
+
+  const fetchCart = async () => {
+    try {
+      const storedCart = await getUserCart();
+      setCart(storedCart);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setCartLoading(false);
+    }
+  };
+
+  const confirmDelete = (itemId, itemName) => {
+    Alert.alert(
+      "Xác nhận xóa",
+      `Bạn có chắc muốn xóa sản phẩm ${itemName} khỏi giỏ hàng?`,
+      [
+        {
+          text: "Hủy",
+          style: "cancel",
+        },
+        {
+          text: "Xóa",
+          onPress: () => handleDelete(itemId),
+          style: "destructive",
+        },
+      ]
+    );
+  };
+
+  const handleDelete = async (itemId) => {
+    try {
+      const response = await deleteItemInCart(itemId);
+
+      if (response && response.status === 200) {
+        Toast.show({
+          type: "successToast",
+          text1: "Xóa khỏi giỏ hàng thành công",
+        });
+        fetchCart();
+      } else {
+        console.log("Đã xảy ra lỗi");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchCart();
+    }
+  }, [isFocused]);
+
+  if (cartLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerInfo}>Bạn có 7 sản phẩm trong giỏ hàng</Text>
-      </View>
+    <>
+      {cart.cartItems.length > 0 ? (
+        <View style={styles.container}>
+          <View style={styles.headerContainer}>
+            <Text style={styles.headerInfo}>
+              Bạn có {cart.cartItems.length} sản phẩm trong giỏ hàng
+            </Text>
+          </View>
 
-      <ScrollView>
-        <View style={styles.itemListContainer}>
-          {itemList.map((item) => (
-            <CartItem key={item.id} item={item} />
-          ))}
+          <ScrollView>
+            <View style={styles.itemListContainer}>
+              {cart.cartItems.map((item) => (
+                <CartItem
+                  key={item._id}
+                  item={item}
+                  onItemPress={() =>
+                    navigation.navigate("ProductDetails", {
+                      productId: item.product,
+                    })
+                  }
+                  onDelete={() => confirmDelete(item.product, item.name)}
+                />
+              ))}
+            </View>
+          </ScrollView>
+
+          <View style={styles.footer}>
+            <View style={styles.totalPriceContainer}>
+              <Text style={styles.totalPriceText}>Tổng tiền</Text>
+              <Text style={styles.totalPrice}>{format(cart.subtotal)}</Text>
+            </View>
+
+            <View style={styles.buttonList}>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => navigation.navigate("Home")}
+              >
+                <Icon name="arrow-left" size={15} color="#fff" />
+                <Text style={styles.buttonText}>Tiếp tục mua sắm</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => navigation.navigate("Checkout")}
+              >
+                <Text style={styles.buttonText}>Tiến hành thanh toán</Text>
+                <Icon name="arrow-right" size={15} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <View style={styles.totalPriceContainer}>
-          <Text style={styles.totalPriceText}>Tổng tiền</Text>
-          <Text style={styles.totalPrice}>{format(20990000 * 7)}</Text>
-        </View>
-
-        <View style={styles.buttonList}>
-          <Pressable
+      ) : (
+        <View style={styles.emptyCartContainer}>
+          <Image source={emptyCartImg} style={styles.emptyCartImage} />
+          <Text style={styles.emptyCartTitle}>Giỏ hàng trống!</Text>
+          <Text style={styles.emptyCartSideInfo}>
+            Có vẻ như bạn chưa thêm gì vào giỏ hàng
+          </Text>
+          <TouchableOpacity
             style={styles.button}
             onPress={() => navigation.navigate("Home")}
           >
-            <Icon name="arrow-left" size={15} color="#fff" />
-            <Text style={styles.buttonText}>Tiếp tục mua sắm</Text>
-          </Pressable>
-          <Pressable
-            style={styles.button}
-            onPress={() => navigation.navigate("Checkout")}
-          >
-            <Text style={styles.buttonText}>Tiến hành thanh toán</Text>
-            <Icon name="arrow-right" size={15} color="#fff" />
-          </Pressable>
+            <Text style={styles.buttonText}>Bắt đầu mua sắm</Text>
+            <Icon name="cart-plus" size={20} color="#fff" />
+          </TouchableOpacity>
         </View>
-      </View>
-    </View>
+      )}
+
+      <Toast config={toastConfig} />
+    </>
   );
 }
 
@@ -106,6 +177,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f2f2f2",
+    paddingTop: 25,
   },
   headerContainer: {
     padding: 10,
@@ -161,5 +233,27 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  emptyCartContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+  emptyCartImage: {
+    width: 230,
+    height: 230,
+    resizeMode: "contain",
+  },
+  emptyCartTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: colors["primary-600"],
+    marginBottom: 5,
+  },
+  emptyCartSideInfo: {
+    fontSize: 16,
+    color: "#000",
+    marginVertical: 10,
   },
 });

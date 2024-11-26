@@ -4,10 +4,10 @@ import {
   StyleSheet,
   View,
   Text,
-  Pressable,
   Image,
   ScrollView,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import colors from "../constants/colors";
@@ -128,16 +128,16 @@ export default function CheckoutScreen() {
         </View>
 
         {selectedPaymentMethodId == 2 ? (
-          <Pressable style={styles.button} onPress={openPaymentSheet}>
+          <TouchableOpacity style={styles.button} onPress={openPaymentSheet}>
             <Text style={styles.buttonText}>Thanh toán</Text>
-          </Pressable>
+          </TouchableOpacity>
         ) : (
-          <Pressable
+          <TouchableOpacity
             style={styles.button}
             onPress={() => navigation.navigate("OrderSuccess")}
           >
             <Text style={styles.buttonText}>Đặt hàng</Text>
-          </Pressable>
+          </TouchableOpacity>
         )}
       </View>
     </View>

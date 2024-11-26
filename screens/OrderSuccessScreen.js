@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, Text, Pressable } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import colors from "../constants/colors";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -16,20 +16,20 @@ export default function OrderSuccessScreen() {
       <Text style={styles.orderSuccessText}>Đặt hàng thành công!</Text>
 
       <View style={styles.buttonList}>
-        <Pressable
+        <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate("Home")}
         >
           <Text style={styles.buttonText}>Về trang chủ</Text>
           <Icon name="home" size={20} color="#fff" />
-        </Pressable>
-        <Pressable
+        </TouchableOpacity>
+        <TouchableOpacity
           style={styles.button}
-          //onPress={() => navigation.navigate("MyOrder")}
+          onPress={() => navigation.navigate("Account")}
         >
           <Text style={styles.buttonText}>Xem đơn hàng</Text>
           <Icon name="inbox" size={20} color="#fff" />
-        </Pressable>
+        </TouchableOpacity>
       </View>
     </View>
   );

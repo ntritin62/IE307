@@ -1,18 +1,12 @@
 import React from "react";
-import { StyleSheet, View, Text, Pressable, Image } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { StyleSheet, View, Text, TouchableOpacity, Image } from "react-native";
 import colors from "../../constants/colors";
 import Icon from "react-native-vector-icons/FontAwesome";
 import format from "../../services/formatVND";
 
-const CartItem = ({ item }) => {
-  const navigation = useNavigation();
-
+const CartItem = ({ item, onItemPress, onDelete }) => {
   return (
-    <Pressable
-      style={styles.itemContainer}
-      //onPress={() => navigation.navigate("ProductDetails")}
-    >
+    <TouchableOpacity style={styles.itemContainer} onPress={onItemPress}>
       <View style={styles.itemInfo}>
         <Image
           source={{
@@ -26,13 +20,10 @@ const CartItem = ({ item }) => {
         </View>
       </View>
 
-      <Pressable
-        style={styles.deleteIcon}
-        //onPress={() => deleteItem(item._id)}
-      >
+      <TouchableOpacity style={styles.deleteIcon} onPress={onDelete}>
         <Icon name="trash" size={20} color="#000" />
-      </Pressable>
-    </Pressable>
+      </TouchableOpacity>
+    </TouchableOpacity>
   );
 };
 
@@ -54,11 +45,12 @@ const styles = StyleSheet.create({
       width: 1,
     },
     elevation: 5,
+    width: "90%",
   },
   itemInfo: {
     flexDirection: "row",
     alignItems: "center",
-    columnGap: 5,
+    columnGap: 10,
   },
   itemImage: {
     width: "40%",

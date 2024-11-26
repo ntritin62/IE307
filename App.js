@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, useIsFocused } from "@react-navigation/native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -27,6 +27,8 @@ import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
 import NonAccountScreen from "./screens/NonAccountScreen";
 import { AuthProvider, AuthContext } from "./services/AuthContext";
+import Badge from "./components/cart/Badge";
+import { getUserCart } from "./api/products/cartsAPI";
 
 const TopTab = createMaterialTopTabNavigator();
 const BottomTab = createBottomTabNavigator();
@@ -55,6 +57,21 @@ const AccountTabs = () => (
 /** Bottom Tab Navigator */
 function BottomNavigation() {
   const { token } = useContext(AuthContext);
+  const [cartLength, setCartLength] = useState(0);
+  const isFocused = useIsFocused();
+
+  const fetchCartLength = async () => {
+    try {
+      const storedCart = await getUserCart();
+      setCartLength(storedCart.cartItems.length);
+    } catch (error) {
+      return error;
+    }
+  };
+
+  useEffect(() => {
+    fetchCartLength();
+  }, [isFocused, fetchCartLength]);
 
   return (
     <BottomTab.Navigator
@@ -110,14 +127,18 @@ function BottomNavigation() {
           title: "Giỏ hàng",
           headerTitleAlign: "center",
           tabBarIcon: ({ color, size, focused }) => (
-            <CustomTabIcon focused={focused} size={size} color={color}>
-              <MaterialIcons
-                name="shopping-cart"
-                color={focused ? colors["primary-800"] : color}
-                size={focused ? size + 4 : size}
-              />
-            </CustomTabIcon>
+            <View>
+              <CustomTabIcon focused={focused} size={size} color={color}>
+                <MaterialIcons
+                  name="shopping-cart"
+                  color={focused ? colors["primary-800"] : color}
+                  size={focused ? size + 4 : size}
+                />
+              </CustomTabIcon>
+              {cartLength > 0 ? <Badge count={cartLength} /> : null}
+            </View>
           ),
+          headerShown: false,
         }}
       />
       <BottomTab.Screen
