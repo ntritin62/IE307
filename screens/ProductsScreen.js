@@ -28,8 +28,9 @@ const ProductsScreen = () => {
   useEffect(() => {
     const fetchData = async () => {
       const result = await getProducts(route.params.brandName);
+
       setProducts(result);
-      setFilteredProducts(result); // Hiển thị tất cả sản phẩm ban đầu
+      setFilteredProducts(result);
     };
 
     fetchData();
