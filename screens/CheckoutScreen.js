@@ -9,35 +9,54 @@ import {
   Alert,
   TouchableOpacity,
 } from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
 import { useNavigation } from "@react-navigation/native";
 import colors from "../constants/colors";
 import format from "../services/formatVND";
 import ghtkImg from "../assets/GHTK.png";
 import { useStripe } from "@stripe/stripe-react-native";
 import SectionHeader from "../components/cart/SectionHeader";
+import { getUserCart } from "../api/products/cartsAPI";
+import LoadingScreen from "./LoadingScreen";
+import { createPaymentIntent } from "../api/products/ordersAPI";
 
 export default function CheckoutScreen() {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const navigation = useNavigation();
+  const [cartTotal, setCartTotal] = useState(0);
+  const [cartLoading, setCartLoading] = useState(true);
+  const [paymentSheetLoading, setPaymentSheetLoading] = useState(false);
 
-  // Replace this with a client secret retrieved from your backend
-  const mockClientSecret = "pi_12345_secret_67890"; // For testing only
+  const fetchCartTotal = async () => {
+    try {
+      const storedCart = await getUserCart();
+      setCartTotal(storedCart.subtotal);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setCartLoading(false);
+    }
+  };
 
   const initializePaymentSheet = async () => {
+    const { clientSecret } = await createPaymentIntent();
+
     const { error } = await initPaymentSheet({
       merchantDisplayName: "Example, Inc.",
-      paymentIntentClientSecret: mockClientSecret,
+      paymentIntentClientSecret: clientSecret,
     });
 
     if (error) {
       console.log("Failed to initialize payment sheet", error.message);
     } else {
       console.log("Payment sheet initialized");
+      setPaymentSheetLoading(true);
     }
   };
 
   useEffect(() => {
     initializePaymentSheet();
+    fetchCartTotal();
   }, []);
 
   const openPaymentSheet = async () => {
@@ -46,7 +65,7 @@ export default function CheckoutScreen() {
     if (error) {
       Alert.alert("Thanh toán thất bại", error.message);
     } else {
-      Alert.alert("Thanh toán thành công", "Đặt hàng thành công!");
+      navigation.navigate("OrderSuccess");
     }
   };
 
@@ -67,6 +86,10 @@ export default function CheckoutScreen() {
   );
 
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState("1");
+
+  if (cartLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <View style={styles.container}>
@@ -119,17 +142,30 @@ export default function CheckoutScreen() {
             containerStyle={{ alignItems: "flex-start" }}
           />
         </View>
+
+        <View style={styles.couponSection}>
+          <Text style={styles.couponHeader}>Áp dụng mã giảm giá</Text>
+          <TouchableOpacity style={styles.couponLink}>
+            <Text style={styles.couponLinkText}>Áp dụng</Text>
+            <Icon name="film" size={15} color={colors["primary-700"]} />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
       <View style={styles.footer}>
         <View style={styles.totalPriceContainer}>
           <Text style={styles.totalPriceText}>Tổng thanh toán</Text>
-          <Text style={styles.totalPrice}>{format(20990000 * 7)}</Text>
+          <Text style={styles.totalPrice}>{format(cartTotal)}</Text>
         </View>
 
         {selectedPaymentMethodId == 2 ? (
-          <TouchableOpacity style={styles.button} onPress={openPaymentSheet}>
+          <TouchableOpacity
+            style={styles.button}
+            disabled={!paymentSheetLoading}
+            onPress={openPaymentSheet}
+          >
             <Text style={styles.buttonText}>Thanh toán</Text>
+            <Icon name="credit-card-alt" size={15} color="#fff" />
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -191,6 +227,28 @@ const styles = StyleSheet.create({
     width: "20%",
     height: 50,
     resizeMode: "contain",
+  },
+  couponSection: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    marginHorizontal: 10,
+    marginTop: 20,
+    padding: 15,
+    borderRadius: 8,
+  },
+  couponHeader: {
+    color: "#000",
+    marginLeft: 5,
+  },
+  couponLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    columnGap: 5,
+  },
+  couponLinkText: {
+    color: colors["primary-700"],
   },
   footer: {
     paddingTop: 15,

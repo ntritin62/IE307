@@ -221,11 +221,11 @@ function StackNavigator() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <StripeProvider publishableKey={process.env.STRIPE_PUBLISHABLE_KEY}>
+    <StripeProvider publishableKey={process.env.STRIPE_PUBLISHABLE_KEY}>
+      <AuthProvider>
         <StatusBar barStyle="light-content" backgroundColor="#fff" />
         <StackNavigator />
-      </StripeProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </StripeProvider>
   );
 }

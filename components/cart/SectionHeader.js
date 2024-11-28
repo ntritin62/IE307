@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, Text, Pressable } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import colors from "../../constants/colors";
 import Icon from "react-native-vector-icons/FontAwesome";
 
@@ -8,10 +8,10 @@ const SectionHeader = ({ title, editLinkEnabled, handlePress }) => {
     <View style={styles.sectionHeader}>
       <Text style={styles.label}>{title}</Text>
       {editLinkEnabled ? (
-        <Pressable style={styles.editLink} onPress={handlePress}>
+        <TouchableOpacity style={styles.editLink} onPress={handlePress}>
           <Text style={styles.editText}>Sửa</Text>
           <Icon name="edit" size={15} color={colors["primary-700"]} />
-        </Pressable>
+        </TouchableOpacity>
       ) : null}
     </View>
   );
