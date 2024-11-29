@@ -29,6 +29,7 @@ import NonAccountScreen from "./screens/NonAccountScreen";
 import { AuthProvider, AuthContext } from "./services/AuthContext";
 import Badge from "./components/cart/Badge";
 import { getUserCart } from "./api/products/cartsAPI";
+import AddressCheckoutScreen from "./screens/AddressCheckoutScreen";
 
 const TopTab = createMaterialTopTabNavigator();
 const BottomTab = createBottomTabNavigator();
@@ -211,6 +212,14 @@ function StackNavigator() {
           component={RegisterScreen}
           options={{
             title: "Đăng ký",
+            headerTitleAlign: "center",
+          }}
+        />
+        <Stack.Screen
+          name="AddressCheckout"
+          component={AddressCheckoutScreen}
+          options={{
+            title: "Danh sách địa chỉ",
             headerTitleAlign: "center",
           }}
         />

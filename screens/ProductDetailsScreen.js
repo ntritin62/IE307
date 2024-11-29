@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -6,20 +6,20 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import colors from '../constants/colors';
-import format from '../services/formatVND';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import Toast, { SuccessToast } from 'react-native-toast-message';
-import Toaster from '../components/ui/Toaster';
-import SpecificationsTable from '../components/products/SpecificationsTable';
-import Warranty from '../components/products/Warranty';
-import SimilarProducts from '../components/products/SimilarProducts';
-import { getProductById } from '../api/products/productsAPI';
-import { useRoute } from '@react-navigation/native';
-import Feather from '@expo/vector-icons/Feather';
-import { addItemToCart } from '../api/products/cartsAPI';
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import colors from "../constants/colors";
+import format from "../services/formatVND";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import Toast, { SuccessToast } from "react-native-toast-message";
+import Toaster from "../components/ui/Toaster";
+import SpecificationsTable from "../components/products/SpecificationsTable";
+import Warranty from "../components/products/Warranty";
+import SimilarProducts from "../components/products/SimilarProducts";
+import { getProductById } from "../api/products/productsAPI";
+import { useRoute } from "@react-navigation/native";
+import Feather from "@expo/vector-icons/Feather";
+import { addItemToCart } from "../api/products/cartsAPI";
 
 const toastConfig = {
   success: (props) => (
@@ -27,11 +27,11 @@ const toastConfig = {
       {...props}
       text1Style={{
         fontSize: 25,
-        fontWeight: '700',
+        fontWeight: "700",
       }}
       text2Style={{
         fontSize: 15,
-        fontWeight: '400',
+        fontWeight: "400",
       }}
     />
   ),
@@ -45,7 +45,7 @@ const ProductDetailScreen = () => {
   const route = useRoute();
   const scrollViewRef = useRef();
 
-  const productId = route.params?.productId || '6620f630caa5cd0b2111dd69';
+  const productId = route.params?.productId || "6620f630caa5cd0b2111dd69";
   useEffect(() => {
     const fetchData = async () => {
       const result = await getProductById(productId);
@@ -60,13 +60,13 @@ const ProductDetailScreen = () => {
     try {
       await addItemToCart(productId);
       Toast.show({
-        type: 'successToast',
-        text1: 'Thêm vào giỏ hàng thành công',
+        type: "successToast",
+        text1: "Thêm vào giỏ hàng thành công",
       });
     } catch (e) {
       if (e.response.status == 400) {
         Toast.show({
-          type: 'infoToast',
+          type: "infoToast",
           text1: e.response.data.msg,
         });
       }
@@ -78,7 +78,7 @@ const ProductDetailScreen = () => {
   };
 
   const handleSimilarProductPress = (id) => {
-    navigation.navigate('ProductDetails', { productId: id });
+    navigation.navigate("ProductDetails", { productId: id });
     scrollToTop();
   };
 
@@ -134,7 +134,9 @@ const ProductDetailScreen = () => {
                     product.price - product.price * (product.saleOff / 100)
                   )}
                 </Text>
-                <Text style={styles.oldPrice}>{format(product.price)}</Text>
+                {product.saleOff > 0 ? (
+                  <Text style={styles.oldPrice}>{format(product.price)}</Text>
+                ) : null}
               </View>
               <Text style={styles.stockStatus}>Còn hàng</Text>
             </View>
@@ -152,12 +154,12 @@ const ProductDetailScreen = () => {
         </ScrollView>
         <View style={styles.cartContainer}>
           <View>
-            <Text style={{ fontSize: 15, color: '#222' }}>Giá</Text>
+            <Text style={{ fontSize: 15, color: "#222" }}>Giá</Text>
             <Text
               style={{
                 fontSize: 22,
-                fontWeight: '700',
-                color: colors['primary-700'],
+                fontWeight: "700",
+                color: colors["primary-700"],
               }}
             >
               {format(product.price - product.price * (product.saleOff / 100))}
@@ -185,12 +187,12 @@ const styles = StyleSheet.create({
   backButtonContainer: {
     paddingTop: 20,
     paddingLeft: 20,
-    width: '100%',
+    width: "100%",
     marginTop: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   backButton: {
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   scrollContainer: {
     paddingBottom: 80,
@@ -199,90 +201,90 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   imageContainer: {
-    width: '100%',
-    backgroundColor: '#fff',
+    width: "100%",
+    backgroundColor: "#fff",
     height: 400,
-    alignItems: 'center',
+    alignItems: "center",
     borderBottomRightRadius: 180,
     borderBottomLeftRadius: 180,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   productImage: {
-    width: '80%',
+    width: "80%",
     height: 350,
-    resizeMode: 'contain',
+    resizeMode: "contain",
   },
   productTitle: {
     marginTop: 15,
     marginBottom: 20,
     fontSize: 25,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   priceContainer: {
     marginBottom: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   currentPrice: {
     fontSize: 25,
-    fontWeight: 'bold',
-    color: colors['primary-700'],
+    fontWeight: "bold",
+    color: colors["primary-700"],
     marginRight: 10,
   },
   oldPrice: {
     fontSize: 18,
-    color: '#888',
-    textDecorationLine: 'line-through',
+    color: "#888",
+    textDecorationLine: "line-through",
   },
   stockStatus: {
     fontSize: 16,
-    color: 'green',
+    color: "green",
     marginVertical: 10,
   },
   aboutTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginVertical: 10,
   },
   aboutDescription: {
     fontSize: 16,
-    color: '#555',
+    color: "#555",
   },
   cartContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 15,
     gap: 15,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     elevation: 50,
     borderTopRightRadius: 15,
     borderTopLeftRadius: 15,
   },
   addToCartButton: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 5,
     backgroundColor: colors.primary,
     padding: 15,
     borderRadius: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   addToCartText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   specContainer: {
     marginTop: 20,
   },
   productStatus: {
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });
 

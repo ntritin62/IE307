@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   totalPrice: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: colors["primary-700"],
   },
