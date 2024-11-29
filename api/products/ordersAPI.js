@@ -43,3 +43,32 @@ export const createOrderCOD = async (addressId) => {
     throw error;
   }
 };
+
+export const createOrderStripe = async (
+  paymentIntentId,
+  clientSecret,
+  addressId
+) => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+
+    const response = await axios.post(
+      `${apiUrl}/api/v1/orders/createOrderStripe`,
+      {
+        paymentIntentId,
+        clientSecret,
+        addressId,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

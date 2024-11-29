@@ -6,11 +6,10 @@ import {
   Text,
   Image,
   ScrollView,
-  Alert,
   TouchableOpacity,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import colors from "../constants/colors";
 import format from "../services/formatVND";
 import ghtkImg from "../assets/GHTK.png";
@@ -18,14 +17,72 @@ import { useStripe } from "@stripe/stripe-react-native";
 import SectionHeader from "../components/cart/SectionHeader";
 import { getUserCart } from "../api/products/cartsAPI";
 import LoadingScreen from "./LoadingScreen";
-import { createPaymentIntent } from "../api/products/ordersAPI";
+import {
+  createOrderCOD,
+  createOrderStripe,
+  createPaymentIntent,
+} from "../api/products/ordersAPI";
+const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast, { ErrorToast } from "react-native-toast-message";
+import Toaster from "../components/ui/Toaster";
+
+const toastConfig = {
+  error: (props) => (
+    <ErrorToast
+      {...props}
+      text1Style={{
+        fontSize: 25,
+        fontWeight: "700",
+      }}
+      text2Style={{
+        fontSize: 15,
+        fontWeight: "400",
+      }}
+    />
+  ),
+  errorToast: ({ text1, props }) => <Toaster title={text1} type="error" />,
+};
 
 export default function CheckoutScreen() {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const navigation = useNavigation();
+  const route = useRoute();
+  const selectedAddressId = route.params?.selectedAddressId || null;
+  const [address, setAddress] = useState(null);
   const [cartTotal, setCartTotal] = useState(0);
   const [cartLoading, setCartLoading] = useState(true);
   const [paymentSheetLoading, setPaymentSheetLoading] = useState(false);
+  const [paymentClientSecret, setPaymentClientSecret] = useState(null);
+
+  const getAddressById = async (addressId) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await axios.get(
+        `${apiUrl}/api/v1/addresses/${addressId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data.address;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchAddress = async (addressId) => {
+    try {
+      const storedAddress = await getAddressById(addressId);
+      setAddress(storedAddress);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const fetchCartTotal = async () => {
     try {
@@ -40,6 +97,7 @@ export default function CheckoutScreen() {
 
   const initializePaymentSheet = async () => {
     const { clientSecret } = await createPaymentIntent();
+    setPaymentClientSecret(clientSecret);
 
     const { error } = await initPaymentSheet({
       merchantDisplayName: "Example, Inc.",
@@ -57,15 +115,61 @@ export default function CheckoutScreen() {
   useEffect(() => {
     initializePaymentSheet();
     fetchCartTotal();
-  }, []);
+    fetchAddress(selectedAddressId);
+  }, [selectedAddressId]);
 
   const openPaymentSheet = async () => {
+    if (!selectedAddressId) {
+      Toast.show({
+        type: "errorToast",
+        text1: "Vui lòng cung cấp địa chỉ",
+      });
+      return;
+    }
+
     const { error } = await presentPaymentSheet();
 
     if (error) {
-      Alert.alert("Thanh toán thất bại", error.message);
+      Toast.show({
+        type: "errorToast",
+        text1: "Thanh toán thất bại: " + error.message,
+      });
     } else {
+      const paymentIntentId = paymentClientSecret.substring(0, 27);
+
+      try {
+        await createOrderStripe(
+          paymentIntentId,
+          paymentClientSecret,
+          selectedAddressId
+        );
+        navigation.navigate("OrderSuccess");
+      } catch (err) {
+        Toast.show({
+          type: "errorToast",
+          text1: err.response.data.msg,
+        });
+      }
+    }
+  };
+
+  const onCreateOrderCODHandler = async () => {
+    if (!selectedAddressId) {
+      Toast.show({
+        type: "errorToast",
+        text1: "Vui lòng cung cấp địa chỉ",
+      });
+      return;
+    }
+
+    try {
+      await createOrderCOD(selectedAddressId);
       navigation.navigate("OrderSuccess");
+    } catch (error) {
+      Toast.show({
+        type: "errorToast",
+        text1: error.response.data.msg,
+      });
     }
   };
 
@@ -92,91 +196,100 @@ export default function CheckoutScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView>
-        <View style={styles.section}>
-          <SectionHeader
-            title="1. Địa chỉ giao hàng"
-            editLinkEnabled={true}
-            //handlePress={() => navigation.navigate("EditForm")}
-          />
+    <>
+      <View style={styles.container}>
+        <ScrollView>
+          <View style={styles.section}>
+            <SectionHeader
+              title="1. Địa chỉ giao hàng"
+              editLinkEnabled={true}
+              handlePress={() =>
+                navigation.navigate("AddressCheckout", { selectedAddressId })
+              }
+            />
 
-          <View style={styles.textContainer}>
-            <Text style={styles.customerName}>Trần Trọng Nhân</Text>
-            <Text style={styles.customerAddress}>
-              Số 123, Đường Nguyễn Văn A, Thành Phố X
-            </Text>
-            <Text style={styles.customerPhoneNumber}>(+84) 123456789</Text>
+            {address ? (
+              <View style={styles.textContainer}>
+                <Text style={styles.customerName}>{address.recipientName}</Text>
+                <Text style={styles.customerAddress}>
+                  {address.deliveryAddress}
+                </Text>
+                <Text style={styles.customerPhoneNumber}>
+                  {address.contactNumber}
+                </Text>
+              </View>
+            ) : null}
           </View>
-        </View>
 
-        <View style={styles.section}>
-          <SectionHeader
-            title="2. Phương thức vận chuyển"
-            editLinkEnabled={true}
-          />
+          <View style={styles.section}>
+            <SectionHeader
+              title="2. Phương thức vận chuyển"
+              editLinkEnabled={true}
+            />
 
-          <View style={styles.shippingContainer}>
-            <Image source={ghtkImg} style={styles.shippingImage} />
-            <View style={styles.textContainer}>
-              <Text style={styles.shippingName}>Giao hàng tiết kiệm</Text>
-              <Text style={styles.shippingPrice}>Miễn phí</Text>
-              <Text style={styles.shippingInfo}>
-                Nhận hàng vào 16/11 - 18/11
-              </Text>
+            <View style={styles.shippingContainer}>
+              <Image source={ghtkImg} style={styles.shippingImage} />
+              <View style={styles.textContainer}>
+                <Text style={styles.shippingName}>Giao hàng tiết kiệm</Text>
+                <Text style={styles.shippingPrice}>Miễn phí</Text>
+                <Text style={styles.shippingInfo}>
+                  Nhận hàng vào 16/11 - 18/11
+                </Text>
+              </View>
             </View>
           </View>
+
+          <View style={styles.section}>
+            <SectionHeader
+              title="3. Phương thức thanh toán"
+              editLinkEnabled={false}
+            />
+
+            <RadioGroup
+              radioButtons={paymentMethodRadioButtons}
+              onPress={setSelectedPaymentMethodId}
+              selectedId={selectedPaymentMethodId}
+              layout="column"
+              containerStyle={{ alignItems: "flex-start" }}
+            />
+          </View>
+
+          <View style={styles.couponSection}>
+            <Text style={styles.couponHeader}>Áp dụng mã giảm giá</Text>
+            <TouchableOpacity style={styles.couponLink}>
+              <Text style={styles.couponLinkText}>Áp dụng</Text>
+              <Icon name="film" size={15} color={colors["primary-700"]} />
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <View style={styles.totalPriceContainer}>
+            <Text style={styles.totalPriceText}>Tổng thanh toán</Text>
+            <Text style={styles.totalPrice}>{format(cartTotal)}</Text>
+          </View>
+
+          {selectedPaymentMethodId == 2 ? (
+            <TouchableOpacity
+              style={styles.button}
+              disabled={!paymentSheetLoading}
+              onPress={openPaymentSheet}
+            >
+              <Text style={styles.buttonText}>Thanh toán</Text>
+              <Icon name="credit-card-alt" size={15} color="#fff" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.button}
+              onPress={onCreateOrderCODHandler}
+            >
+              <Text style={styles.buttonText}>Đặt hàng</Text>
+            </TouchableOpacity>
+          )}
         </View>
-
-        <View style={styles.section}>
-          <SectionHeader
-            title="3. Phương thức thanh toán"
-            editLinkEnabled={false}
-          />
-
-          <RadioGroup
-            radioButtons={paymentMethodRadioButtons}
-            onPress={setSelectedPaymentMethodId}
-            selectedId={selectedPaymentMethodId}
-            layout="column"
-            containerStyle={{ alignItems: "flex-start" }}
-          />
-        </View>
-
-        <View style={styles.couponSection}>
-          <Text style={styles.couponHeader}>Áp dụng mã giảm giá</Text>
-          <TouchableOpacity style={styles.couponLink}>
-            <Text style={styles.couponLinkText}>Áp dụng</Text>
-            <Icon name="film" size={15} color={colors["primary-700"]} />
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <View style={styles.totalPriceContainer}>
-          <Text style={styles.totalPriceText}>Tổng thanh toán</Text>
-          <Text style={styles.totalPrice}>{format(cartTotal)}</Text>
-        </View>
-
-        {selectedPaymentMethodId == 2 ? (
-          <TouchableOpacity
-            style={styles.button}
-            disabled={!paymentSheetLoading}
-            onPress={openPaymentSheet}
-          >
-            <Text style={styles.buttonText}>Thanh toán</Text>
-            <Icon name="credit-card-alt" size={15} color="#fff" />
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate("OrderSuccess")}
-          >
-            <Text style={styles.buttonText}>Đặt hàng</Text>
-          </TouchableOpacity>
-        )}
       </View>
-    </View>
+      <Toast config={toastConfig} />
+    </>
   );
 }
 

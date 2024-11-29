@@ -13,7 +13,7 @@ export function OrderItemList({ orders }) {
     <View>
       <FlatList
         data={orders}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item._id}
         renderItem={({ item }) => <OrderItem order={item} />} // Truyền cả đơn hàng
       />
     </View>

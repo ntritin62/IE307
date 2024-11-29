@@ -4,7 +4,7 @@ import { AuthContext } from "../../services/AuthContext";
 
 const SignOutScreen = ({ navigation }) => {
   const { handleSignOut } = useContext(AuthContext);
-  const handleCancel = () => navigation.navigate("Account");
+  const handleCancel = () => navigation.navigate("Home");
 
   return (
     <View style={styles.container}>
@@ -16,7 +16,7 @@ const SignOutScreen = ({ navigation }) => {
             source={require("../../assets/images/signout.png")}
             style={styles.companyLogo}
           />
-          <Text style={styles.companyTitle}>Website bán laptop</Text>
+          <Text style={styles.companyTitle}>LAPPU STORE</Text>
         </View>
 
         {/* Sign Out Section */}

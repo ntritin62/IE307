@@ -5,28 +5,29 @@ import { useNavigation } from "@react-navigation/native";
 
 export function OrderItem({ order }) {
   const navigation = useNavigation();
-  // console.log(order);
+  // console.log("Image URL:", order.orderItems[0]?.imageUrl);
+
   return (
     <View style={styles.orderItemWrapper}>
       <View style={styles.orderItemDetails}>
-        <Text style={styles.orderItemTitle}>Mã đơn hàng: {order.order_no}</Text>
+        <Text style={styles.orderItemTitle}>Mã đơn hàng: {order._id}</Text>
         <View style={styles.orderInfoGroup}>
           <View style={styles.orderInfoItem}>
             <Text style={styles.textGray}>Ngày đặt:</Text>
-            <Text style={styles.textSilver}>{order.order_date}</Text>
+            <Text style={styles.textSilver}>{order.createdAt}</Text>
           </View>
           <View style={styles.orderInfoItem}>
             <Text style={styles.textGray}>Tình trạng:</Text>
             <Text style={styles.textSilver}>{order.status}</Text>
           </View>
-          <View style={styles.orderInfoItem}>
+          {/* <View style={styles.orderInfoItem}>
             <Text style={styles.textGray}>Ngày nhận hàng:</Text>
             <Text style={styles.textSilver}>{order.delivery_date}</Text>
-          </View>
-          <View style={styles.orderInfoItem}>
+          </View> */}
+          {/* <View style={styles.orderInfoItem}>
             <Text style={styles.textGray}>Thanh toán:</Text>
             <Text style={styles.textSilver}>{order.payment_method}</Text>
-          </View>
+          </View> */}
         </View>
       </View>
 
@@ -34,25 +35,26 @@ export function OrderItem({ order }) {
         <View style={styles.orderOverviewContent}>
           <View style={styles.orderOverviewImg}>
             <Image
-              source={order.items[0].imgSource}
-              style={styles.objectFitCover} // Chỉ sử dụng style cho kích thước
-              resizeMode="cover" // Truyền resizeMode như một prop
+              source={{ uri: order.orderItems[0].imageUrl }}
+              style={styles.objectFitCover} // Đảm bảo có style cho ảnh
+              resizeMode="cover"
             />
           </View>
           <View style={styles.orderOverviewInfo}>
-            <Text style={styles.textXl}>{order.items[0].name}</Text>
+            <Text style={styles.textXl}>{order.orderItems[0].name}</Text>
             <View>
-              <Text style={styles.fontBold}>
+              {/* <Text style={styles.fontBold}>
                 Màu:{" "}
-                <Text style={styles.textSilver}>{order.items[0].color}</Text>
-              </Text>
+                <Text style={styles.textSilver}>{order.orderItems[0].product.color}</Text>
+              </Text> */}
               <Text style={styles.fontBold}>
-                Số lượng:{" "}
-                <Text style={styles.textSilver}>{order.items[0].quantity}</Text>
+                Số lượng: <Text style={styles.textSilver}>1</Text>
               </Text>
               <Text style={styles.fontBold}>
                 Giá:{" "}
-                <Text style={styles.textSilver}>{order.items[0].price}</Text>
+                <Text style={styles.textSilver}>
+                  {order.orderItems[0].price}
+                </Text>
               </Text>
             </View>
           </View>
@@ -73,20 +75,16 @@ export function OrderItem({ order }) {
 
 OrderItem.propTypes = {
   order: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    order_no: PropTypes.string.isRequired,
-    order_date: PropTypes.string.isRequired,
+    _id: PropTypes.string.isRequired,
+    _id: PropTypes.string.isRequired,
+    createdAt: PropTypes.string.isRequired,
     status: PropTypes.string.isRequired,
-    delivery_date: PropTypes.string.isRequired,
-    payment_method: PropTypes.string.isRequired,
-    items: PropTypes.arrayOf(
+    orderItems: PropTypes.arrayOf(
       PropTypes.shape({
-        id: PropTypes.string.isRequired,
+        _id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
-        color: PropTypes.string.isRequired,
-        quantity: PropTypes.number.isRequired,
         price: PropTypes.number.isRequired,
-        imgSource: PropTypes.any.isRequired,
+        imageUrl: PropTypes.any.isRequired,
       })
     ).isRequired,
   }).isRequired,

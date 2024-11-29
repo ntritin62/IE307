@@ -16,7 +16,12 @@ const CartItem = ({ item, onItemPress, onDelete }) => {
         />
         <View style={styles.itemText}>
           <Text style={styles.itemName}>{item.name}</Text>
-          <Text style={styles.itemPrice}>{format(item.price)}</Text>
+          <Text style={styles.currentItemPrice}>
+            {format(item.price - item.price * (item.saleOff / 100))}
+          </Text>
+          {item.saleOff > 0 ? (
+            <Text style={styles.oldItemPrice}>{format(item.price)}</Text>
+          ) : null}
         </View>
       </View>
 
@@ -46,28 +51,34 @@ const styles = StyleSheet.create({
     },
     elevation: 5,
     width: "90%",
+    height: 130,
   },
   itemInfo: {
     flexDirection: "row",
     alignItems: "center",
-    columnGap: 10,
+    columnGap: 20,
   },
   itemImage: {
-    width: "40%",
-    height: 70,
+    width: 100,
+    height: 100,
     resizeMode: "contain",
   },
   itemText: {
-    maxWidth: "50%",
+    maxWidth: "55%",
   },
   itemName: {
     fontWeight: "bold",
     fontSize: 14,
   },
-  itemPrice: {
+  currentItemPrice: {
     fontSize: 18,
     fontWeight: "bold",
     color: colors["primary-700"],
+  },
+  oldItemPrice: {
+    fontSize: 14,
+    color: "#888",
+    textDecorationLine: "line-through",
   },
 });
 
