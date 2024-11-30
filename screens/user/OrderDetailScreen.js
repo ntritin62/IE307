@@ -19,7 +19,7 @@ export const OrderDetailScreen = ({ route }) => {
   const totalAmount = order.total || calculateTotal(order.items);
 
   // Danh sách trạng thái và vị trí tương ứng
-  const statuses = ["Chờ xác nhận", "Đang chuẩn bị", "Đang giao", "Đã giao"];
+  const statuses = ["pending", "paid", "delivering", "delivered"];
   const currentStatusIndex = statuses.indexOf(order.status);
 
   return (
@@ -27,10 +27,10 @@ export const OrderDetailScreen = ({ route }) => {
       <View style={styles.container}>
         {/* Thông tin đơn hàng */}
         <View style={styles.orderWrapper}>
-          <Text style={styles.orderNumber}>Mã đơn hàng: {order.order_no}</Text>
-          <Text style={styles.orderDate}>Ngày đặt: {order.order_date}</Text>
+          <Text style={styles.orderNumber}>Mã đơn hàng: {order._id}</Text>
+          <Text style={styles.orderDate}>Ngày đặt: {order.createdAt}</Text>
           <Text style={styles.total}>
-            Tổng tiền: <Text style={styles.totalPrice}>{totalAmount}</Text>
+            Tổng tiền: <Text style={styles.totalPrice}>{order.total}</Text>
           </Text>
         </View>
 
@@ -71,20 +71,17 @@ export const OrderDetailScreen = ({ route }) => {
 
         {/* Danh sách sản phẩm */}
         <View style={styles.orderItemsWrapper}>
-          {order.items.map((item) => (
-            <View style={styles.itemWrapper} key={item.id}>
-              <Image source={item.imgSource} style={styles.itemImage} />
+          {order.orderItems.map((item) => (
+            <View style={styles.itemWrapper} key={item._id}>
+              <Image source={{ uri: item.imageUrl }} style={styles.itemImage} />
               <View style={styles.itemInfo}>
                 <Text style={styles.itemName}>{item.name}</Text>
-                <Text style={styles.itemColor}>Màu: {item.color}</Text>
-                {/* </View> */}
-                {/* <View style={styles.itemCalc}> */}
-                <Text style={styles.itemText}>Số lượng: {item.quantity}</Text>
+                {/* <Text style={styles.itemColor}>Màu: {item.color}</Text> */}
+                <Text style={styles.itemText}>Số lượng: 1</Text>
+                {/* Bạn có thể thay đổi số lượng nếu cần */}
                 <Text style={styles.itemText}>Giá: {item.price}</Text>
+                {/* Sửa từ item.orderItems.price thành item.price */}
               </View>
-              {/* <TouchableOpacity style={styles.itemBtn}>
-                <Text style={styles.itemBtnText}>X</Text>
-              </TouchableOpacity> */}
             </View>
           ))}
         </View>
@@ -108,7 +105,6 @@ const styles = StyleSheet.create({
   orderNumber: {
     fontSize: 20,
     fontWeight: "bold",
-    marginTop: -20,
   },
   orderDate: {
     fontSize: 14,
@@ -129,7 +125,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    position: "relative",
   },
   progressItem: {
     alignItems: "center",

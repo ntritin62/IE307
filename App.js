@@ -38,14 +38,14 @@ const Stack = createStackNavigator();
 /** Account Top Tabs */
 const AccountTabs = () => (
   <View style={{ flex: 1 }}>
-    <View
+    {/* <View
       style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 1 }}
     >
       <UserMenu />
-    </View>
+    </View> */}
     <TopTab.Navigator
       screenOptions={{
-        tabBarStyle: { marginTop: 100 },
+        tabBarStyle: { marginTop: 40 },
       }}
     >
       <TopTab.Screen name="My Orders" component={OrderStack} />

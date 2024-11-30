@@ -1,185 +1,284 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
+  TextInput,
   TouchableOpacity,
-  FlatList,
-  Dimensions,
+  Image,
+  Alert,
+  ScrollView,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import { launchImageLibrary } from "react-native-image-picker";
+import Icon from "react-native-vector-icons/Ionicons";
+import { updateUserProfile } from "../../api/accountAPI/accountAPI";
+import { deleteUserAddress } from "../../api/accountAPI/editAddressAPI";
 
-const { width } = Dimensions.get("window");
+export const EditProfileScreen = ({ route, navigation }) => {
+  const { user } = route.params;
+  const [form, setForm] = useState({
+    fullName: user.fullName || user._id,
+    email: user.email,
+    phoneNumber: user.phoneNumber,
+    address: user.address,
+    avatar: user.avatar || null,
+  });
 
-const AddressScreen = ({ navigation }) => {
-  const handleCancel = () => navigation.navigate("Account");
-  const handleRemove = () => navigation.navigate("");
+  const handleSave = async () => {
+    // console.log("Dữ liệu trước khi gửi lên API:", form);
+    try {
+      // Cập nhật dữ liệu người dùng trên server
+      const updatedUser = await updateUserProfile(form);
 
-  const formFields = [
-    {
-      label: "Tỉnh",
-      placeholder: "...",
-      type: "input",
-    },
-    {
-      label: "Quận/Huyện",
-      placeholder: "...",
-      type: "input",
-    },
-    {
-      label: "Phường/Xã",
-      placeholder: "...",
-      type: "input",
-    },
-    {
-      label: "Đường",
-      placeholder: "...",
-      type: "input",
-    },
-  ];
+      // Nếu dữ liệu được cập nhật thành công, cập nhật lại state
+      // console.log("Dữ liệu đã được cập nhật từ API:", updatedUser);
+      setForm({ ...form, ...updatedUser }); // Cập nhật lại form với dữ liệu mới trả về từ API
 
-  const renderItem = ({ item }) => {
-    if (item.type === "input") {
-      return (
-        <View style={styles.formElement}>
-          <Text style={styles.label}>{item.label}</Text>
-          <TextInput style={styles.input} placeholder={item.placeholder} />
-        </View>
-      );
-    } else if (item.type === "picker") {
-      return (
-        <View style={styles.formElement}>
-          <Text style={styles.label}>{item.label}</Text>
-          <Picker style={styles.input}>
-            {item.options.map((option, index) => (
-              <Picker.Item
-                key={index}
-                label={option}
-                value={option.toLowerCase()}
-              />
-            ))}
-          </Picker>
-        </View>
-      );
-    } else if (item.type === "textarea") {
-      return (
-        <View style={styles.formElement}>
-          <Text style={styles.label}>{item.label}</Text>
-          <TextInput
-            style={[styles.input, styles.textarea]}
-            placeholder={item.placeholder}
-            multiline
-          />
-        </View>
-      );
+      Alert.alert("Thành công", "Thông tin đã được cập nhật.");
+      navigation.goBack(); // Quay lại trang trước
+    } catch (error) {
+      Alert.alert("Lỗi", "Không thể cập nhật thông tin.");
+      console.error("Lỗi khi cập nhật thông tin:", error);
     }
-    return null;
   };
 
-  return (
-    <View style={styles.container}>
-      {/* <Text style={styles.title}>My Account - Add Address</Text> */}
-      <FlatList
-        data={formFields}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
-        nestedScrollEnabled={true}
-        contentContainerStyle={styles.listContent}
-      />
-      <View style={styles.buttonGroup}>
-        <TouchableOpacity style={styles.saveBtn}>
-          <Text style={styles.btnTextSave}>Lưu</Text>
+  const handleChangePhoto = async () => {
+    const options = {
+      mediaType: "photo",
+      quality: 0.8,
+      selectionLimit: 1,
+    };
+    try {
+      const result = await launchImageLibrary(options);
+
+      if (result.didCancel) {
+        console.log("Người dùng đã hủy chọn ảnh.");
+      } else if (result.errorMessage) {
+        console.error("Lỗi khi chọn ảnh:", result.errorMessage);
+        Alert.alert("Lỗi", "Không thể chọn ảnh. Vui lòng thử lại.");
+      } else {
+        const selectedImage = result.assets[0];
+        console.log("Ảnh được chọn:", selectedImage);
+        setForm({ ...form, avatar: selectedImage.uri });
+      }
+    } catch (error) {
+      console.error("Lỗi khi truy cập thư viện ảnh:", error);
+      Alert.alert("Lỗi", "Không thể truy cập thư viện ảnh. Vui lòng thử lại.");
+    }
+  };
+
+  const navigateToEditAddress = () => {
+    navigation.navigate("EditAddressScreen", {
+      address: form.address,
+      phone: form.phoneNumber,
+      recipient: form.fullName,
+    });
+  };
+
+  const AddressSection = () => (
+    <View style={styles.listContent}>
+      <View style={styles.addressHeader}>
+        <Text style={styles.subtitle}>Địa chỉ</Text>
+        <TouchableOpacity
+          style={styles.addAddressButton}
+          onPress={() => navigation.navigate("AddAddressScreen")}
+        >
+          <Icon name="add-circle-outline" size={20} color="#fff" />
+          <Text style={styles.addAddressButtonText}>Thêm địa chỉ</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel}>
-          <Text style={styles.btnText}>Hủy</Text>
-        </TouchableOpacity>
-        {/* <TouchableOpacity style={styles.removeBtn} onPress={handleRemove}>
-          <Text style={styles.btnText}>Xóa</Text>
-        </TouchableOpacity> */}
       </View>
     </View>
+  );
+
+  return (
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.container}>
+        <TouchableOpacity
+          onPress={handleChangePhoto}
+          style={styles.avatarWrapper}
+        >
+          <Image
+            source={
+              form.avatar
+                ? { uri: form.avatar }
+                : require("../../assets/images/avatar.png")
+            }
+            style={styles.avatar}
+          />
+          <View style={styles.iconWrapper}>
+            <Icon name="camera" size={20} color="#fff" />
+          </View>
+        </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Họ tên"
+          value={form.fullName}
+          onChangeText={(text) => setForm({ ...form, fullName: text })}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={form.email}
+          onChangeText={(text) => setForm({ ...form, email: text })}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Số điện thoại"
+          value={form.phoneNumber}
+          onChangeText={(text) => setForm({ ...form, phoneNumber: text })}
+        />
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.buttonText}>Hủy</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.buttonText}>Lưu</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          style={styles.changePasswordButton}
+          onPress={() => navigation.navigate("ChangePasswordScreen")}
+        >
+          <Text style={styles.changePasswordText}>Đổi mật khẩu</Text>
+        </TouchableOpacity>
+        <AddressSection />
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+  },
   container: {
-    flex: 1,
-    padding: 16,
+    alignItems: "center",
+    padding: 20,
     backgroundColor: "#fff",
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "600",
-    marginBottom: 16,
-    color: "#3c4242",
+  avatarWrapper: {
+    position: "relative",
+    marginBottom: 20,
   },
-  listContent: {
-    paddingBottom: 32,
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
   },
-  formElement: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginBottom: 6,
-    color: "#3c4242",
+  iconWrapper: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: "#63c9c6",
+    borderRadius: 50,
+    padding: 3,
+    right: 15,
   },
   input: {
-    height: 40,
-    borderWidth: 1,
-    borderColor: "#d9d9d9",
+    width: "100%",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    paddingVertical: 10,
+    marginBottom: 15,
+  },
+  changePasswordButton: {
+    backgroundColor: "#63c9c6",
+    padding: 11,
     borderRadius: 5,
-    paddingHorizontal: 14,
-    fontSize: 14,
-    color: "#807d7e",
+    marginBottom: 20,
+    marginTop: 10,
+    width: "100%",
   },
-  textarea: {
-    height: 100,
-    textAlignVertical: "top",
+  changePasswordText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "bold",
   },
-  buttonGroup: {
+  buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 16,
+    width: "100%",
   },
-  saveBtn: {
+  cancelButton: {
+    backgroundColor: "#ccc",
+    padding: 10,
+    borderRadius: 5,
     flex: 1,
-    backgroundColor: "#10b9b0",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 40,
-    borderRadius: 4,
-    marginRight: 8,
+    marginRight: 10,
   },
-  cancelBtn: {
+  saveButton: {
+    backgroundColor: "#63c9c6",
+    padding: 10,
+    borderRadius: 5,
     flex: 1,
-    backgroundColor: "#f6f6f6",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 40,
-    borderRadius: 4,
-    marginRight: 8,
+    marginLeft: 10,
   },
-  removeBtn: {
-    flex: 1,
-    backgroundColor: "#f6f6f6",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 40,
-    borderRadius: 4,
-  },
-  btnText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#000",
-  },
-  btnTextSave: {
-    fontSize: 14,
-    fontWeight: "500",
+  buttonText: {
+    textAlign: "center",
     color: "#fff",
+    fontWeight: "bold",
+  },
+  listContent: {
+    width: "100%",
+    marginTop: 20,
+  },
+  subtitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  addressContainer: {
+    width: "100%",
+  },
+  inputWithIcon: {
+    position: "relative",
+    width: "100%",
+  },
+  textInputWithIcon: {
+    width: "100%",
+    paddingVertical: 10,
+    paddingRight: 40, // Để chừa không gian cho icon
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+  },
+  iconInInput: {
+    position: "absolute",
+    left: 300,
+    top: "30%",
+    transform: [{ translateY: -10 }], // Căn chỉnh icon giữa theo chiều dọc
+  },
+  addressHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  addAddressButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#63c9c6",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 5,
+  },
+  addAddressButtonText: {
+    color: "#fff",
+    marginLeft: 5,
+    fontWeight: "bold",
+  },
+  iconsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    position: "absolute",
+    right: 10,
+    top: "15%",
+  },
+  iconInInput: {
+    marginHorizontal: 10,
+    left: 20,
   },
 });
-
-export default AddressScreen;

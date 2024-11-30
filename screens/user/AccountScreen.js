@@ -1,239 +1,323 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  StyleSheet,
-  Text,
-  TextInput,
   View,
-  TouchableOpacity,
+  Text,
+  StyleSheet,
   FlatList,
-  KeyboardAvoidingView,
-  Platform,
+  TouchableOpacity,
+  Alert,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import IconPen from "react-native-vector-icons/MaterialIcons";
+import { fetchUserProfile } from "../../api/accountAPI/accountAPI";
+import { deleteUserAddress } from "../../api/accountAPI/editAddressAPI";
+import { useFocusEffect } from "@react-navigation/native";
+import Icon from "react-native-vector-icons/Ionicons";
 
-export function AccountScreen() {
-  const navigation = useNavigation();
+export const ProfileScreen = ({ navigation }) => {
+  const [user, setUser] = useState(null);
 
-  const [formFields, setFormFields] = useState([
-    { key: "name", label: "Tên", value: "Nguyễn Văn A" },
-    { key: "email", label: "Địa chỉ email", value: "A@gmail.com" },
-    { key: "phone", label: "Số điện thoại", value: "+123456789" },
-    { key: "password", label: "Mật khẩu", value: "******" },
-  ]);
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchProfile = async () => {
+        try {
+          const data = await fetchUserProfile();
+          // console.log("User data: ", data.user.address);
+          setUser(data.user); // user.address contains an array of addresses
+        } catch (error) {
+          Alert.alert("Lỗi", "Không thể tải thông tin người dùng.");
+          console.error(error);
+        }
+      };
+      fetchProfile();
+    }, [])
+  );
 
-  const handleInputChange = (key, text) => {
-    setFormFields((prevFields) =>
-      prevFields.map((field) =>
-        field.key === key ? { ...field, value: text } : field
-      )
-    );
+  if (!user) return null;
+
+  // Callback function to update address after edit
+  const updateUserAddressFunction = (updatedAddress) => {
+    setUser({
+      ...user,
+      address: user.address.map((item) =>
+        item._id === updatedAddress._id ? updatedAddress : item
+      ),
+    });
   };
 
-  const handleSaveChange = (key) => {
-    const field = formFields.find((item) => item.key === key);
-    if (field) {
-      alert(`Cập nhật thành công: ${field.label}`);
+  // Delete address handler
+  const handleDeleteAddress = async (addressId) => {
+    try {
+      await deleteUserAddress(addressId); // API to delete address
+      setUser({
+        ...user,
+        address: user.address.filter((item) => item._id !== addressId),
+      });
+      Alert.alert("Thành công", "Địa chỉ đã được xóa.");
+    } catch (error) {
+      Alert.alert("Lỗi", "Không thể xóa địa chỉ.");
+      console.error(error);
     }
   };
 
-  const addresses = [
-    {
-      id: 1,
-      tags: ["Primary", "Home"],
-      name: "Nguyễn Văn A",
-      location: "TPHCM",
-    },
-    // {
-    //   id: 2,
-    //   tags: ["Work"],
-    //   name: "Jane Doe",
-    //   location: "Dubai, UAE",
-    // },
-  ];
+  const renderAddressItem = ({ item }) => (
+    <View style={styles.addressCard}>
+      <View style={styles.addressItem}>
+        <Text style={styles.addressTitle}>
+          Tên người nhận: {item.recipientName}
+        </Text>
 
-  const renderAddress = ({ item }) => (
-    <View style={styles.addressItem}>
-      <View style={styles.addressTags}>
-        {item.tags.map((tag, index) => (
-          <Text key={index} style={styles.tag}>
-            {tag}
-          </Text>
-        ))}
+        <Text style={styles.addressText}>Địa chỉ: {item.deliveryAddress}</Text>
+        <Text style={styles.addressText}>
+          Số điện thoại: {item.contactNumber}
+        </Text>
       </View>
-      <Text style={styles.textNormal}>{item.name}</Text>
-      <Text style={styles.textNormal}>{item.location}</Text>
-      <View style={styles.addressBtns}>
+      <View style={styles.addressActions}>
         <TouchableOpacity
-          style={styles.editBtn}
-          onPress={() => navigation.navigate("Address")}
+          style={styles.actionButton}
+          onPress={() =>
+            navigation.navigate("EditAddressScreen", {
+              address: item.deliveryAddress, // Chuyển thông tin địa chỉ
+              recipient: item.recipientName,
+              phone: item.contactNumber,
+              addressId: item._id,
+              updateUserAddressFunction, // Truyền hàm callback để cập nhật địa chỉ sau khi chỉnh sửa
+            })
+          }
         >
-          <Text style={styles.btnText}>Sửa</Text>
+          <IconPen name="edit" size={20} color="#63c9c6" />
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.removeBtn}
-          onPress={() => console.log("Address removed")}
+          style={styles.actionButton}
+          onPress={() => handleDeleteAddress(item._id)}
         >
-          <Text style={[styles.btnText, { color: "#3c4242" }]}>Xóa</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
-  const renderFormField = ({ item }) => (
-    <View style={styles.formElement}>
-      <Text style={styles.label}>{item.label}</Text>
-      <View style={styles.inputWrapper}>
-        <TextInput
-          style={styles.input}
-          value={item.value}
-          onChangeText={(text) => handleInputChange(item.key, text)}
-          secureTextEntry={item.key === "password"}
-          placeholder={`Nhập ${item.label}`}
-        />
-        <TouchableOpacity
-          style={styles.changeBtn}
-          onPress={() => handleSaveChange(item.key)}
-        >
-          <Text style={[styles.btnText, { color: "#10b9b0" }]}>Thay đổi</Text>
+          <Icon name="trash" size={20} color="#ccc" />
         </TouchableOpacity>
       </View>
     </View>
   );
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
-      <FlatList
-        ListHeaderComponent={() => (
-          <>
-            {/* Account Information */}
-            <Text style={styles.subtitle}>Thông tin tài khoản</Text>
-          </>
-        )}
-        data={formFields}
-        renderItem={renderFormField}
-        keyExtractor={(item) => item.key}
-        ListFooterComponent={() => (
-          <>
-            {/* Address Section */}
-            <Text style={styles.subtitle}>Địa chỉ</Text>
-            <TouchableOpacity
-              style={styles.addBtn}
-              onPress={() => navigation.navigate("Address")}
-            >
-              <Text style={styles.btnText}>Thêm địa chỉ</Text>
-            </TouchableOpacity>
-            <FlatList
-              data={addresses}
-              renderItem={renderAddress}
-              keyExtractor={(item) => item.id.toString()}
-              contentContainerStyle={styles.listContent}
-            />
-          </>
-        )}
-        contentContainerStyle={styles.listContent}
-      />
-    </KeyboardAvoidingView>
+    <View style={styles.container}>
+      {/* Account info */}
+      <View style={styles.card}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Thông tin tài khoản</Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Edit", { user })}
+          >
+            <IconPen name="edit" size={20} color="#63c9c6" />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.name}>{user.fullName || user._id}</Text>
+        <Text style={styles.info}>Số điện thoại: {user.phoneNumber}</Text>
+        <Text style={styles.info}>Email: {user.email}</Text>
+      </View>
+
+      {/* Address List */}
+      <Text style={styles.sectionTitle}>Danh sách địa chỉ</Text>
+      {user.address && user.address.length > 0 ? (
+        <FlatList
+          data={user.address}
+          renderItem={renderAddressItem}
+          keyExtractor={(item, index) => index.toString()}
+          contentContainerStyle={styles.addressList}
+        />
+      ) : null}
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 20,
+    backgroundColor: "#f5f5f5",
+  },
+  card: {
     backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 20,
   },
-  subtitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 12,
-    color: "#3c4242",
-  },
-  formElement: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginBottom: 6,
-    color: "#3c4242",
-  },
-  inputWrapper: {
+  header: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 10,
   },
-  input: {
-    flex: 1,
-    height: 40,
-    borderWidth: 1,
-    borderColor: "#d9d9d9",
-    borderRadius: 5,
-    paddingHorizontal: 14,
+  title: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#63c9c6",
+  },
+  name: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  info: {
     fontSize: 14,
-    color: "#807d7e",
+    color: "#555",
+    marginBottom: 3,
   },
-  changeBtn: {
-    paddingHorizontal: 8,
-    justifyContent: "center",
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "#333",
   },
-  btnText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#fff",
+  addressList: {
+    paddingBottom: 20,
   },
+  // addressCard: {
+  //   backgroundColor: "#fff",
+  //   paddingVertical: 10,
+  //   paddingHorizontal: 15,
+  //   borderBottomWidth: 1,
+  //   borderBottomColor: "#ddd",
+  // },
   addressItem: {
-    borderWidth: 1,
-    borderColor: "#d9d9d9",
-    borderRadius: 5,
-    padding: 16,
-    marginBottom: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
   },
-  addressTags: {
-    flexDirection: "row",
-    marginBottom: 8,
-  },
-  tag: {
-    backgroundColor: "#eee",
-    padding: 4,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  textNormal: {
+  addressTitle: {
     fontSize: 14,
-    color: "#807d7e",
-    marginBottom: 4,
+    fontWeight: "bold",
+    marginBottom: 5,
   },
-  addressBtns: {
+  addressText: {
+    fontSize: 14,
+    color: "#555",
+    marginBottom: 3,
+  },
+  addressActions: {
     flexDirection: "row",
-    marginTop: 8,
+    justifyContent: "flex-end",
+    marginTop: 10,
   },
-  editBtn: {
-    flex: 1,
-    backgroundColor: "#10b9b0",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 40,
-    borderRadius: 4,
-    marginRight: 8,
+  actionButton: {
+    marginLeft: 15,
+    marginTop: -49,
+    padding: 6,
   },
-  removeBtn: {
-    flex: 1,
-    backgroundColor: "#f6f6f6",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 40,
-    borderRadius: 4,
+  addAddressButton: {
+    marginTop: 20,
+    alignSelf: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: "#63c9c6",
+    borderRadius: 5,
   },
-  addBtn: {
-    backgroundColor: "#10b9b0",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 40,
-    borderRadius: 4,
-    marginBottom: 16,
+  addAddressText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
-  listContent: {
-    padding: 16,
+  emptyText: {
+    fontSize: 14,
+    color: "#aaa",
+    textAlign: "center",
+    marginTop: 20,
   },
 });
+
+// export const ProfileScreen = ({ navigation }) => {
+//   const [user, setUser] = useState(null);
+
+//   useFocusEffect(
+//     React.useCallback(() => {
+//       const fetchProfile = async () => {
+//         try {
+//           const data = await fetchUserProfile();
+//           setUser(data.user); // user.address chứa mảng các địa chỉ
+//         } catch (error) {
+//           Alert.alert("Lỗi", "Không thể tải thông tin người dùng.");
+//           console.error(error);
+//         }
+//       };
+//       fetchProfile();
+//     }, [])
+//   );
+
+//   if (!user) return null;
+
+//   // Hàm xóa địa chỉ
+//   const handleDeleteAddress = async (addressId) => {
+//     try {
+//       await deleteUserAddress(addressId); // Gọi API để xóa địa chỉ
+//       setUser({
+//         ...user,
+//         address: user.address.filter((item) => item.id !== addressId),
+//       });
+//       Alert.alert("Thành công", "Địa chỉ đã được xóa.");
+//     } catch (error) {
+//       Alert.alert("Lỗi", "Không thể xóa địa chỉ.");
+//       console.error(error);
+//     }
+//   };
+
+//   // Hàm render từng địa chỉ
+//   const renderAddressItem = ({ item }) => (
+//     <View style={styles.addressCard}>
+//       <View style={styles.addressItem}>
+//         <Text style={styles.addressTitle}>
+//           Tên người nhận: {item.recipientName}
+//         </Text>
+//         <Text style={styles.addressText}>
+//           Số điện thoại: {item.contactNumber}
+//         </Text>
+//         <Text style={styles.addressText}>Địa chỉ: {item.deliveryAddress}</Text>
+//       </View>
+
+//       <View style={styles.addressActions}>
+//         <TouchableOpacity
+//           style={styles.actionButton}
+//           onPress={() =>
+//             navigation.navigate("EditAddressScreen", {
+//               address: item,
+//               phone: user.phoneNumber,
+//               recipient: user.fullName,
+//             })
+//           }
+//         >
+//           <IconPen name="edit" size={20} color="#63c9c6" />
+//         </TouchableOpacity>
+//         <TouchableOpacity
+//           style={styles.actionButton}
+//           onPress={() => handleDeleteAddress(item.id)}
+//         >
+//           <Icon name="trash" size={20} color="#ccc" />
+//         </TouchableOpacity>
+//       </View>
+//     </View>
+//   );
+
+//   return (
+//     <View style={styles.container}>
+//       {/* Thông tin tài khoản */}
+//       <View style={styles.card}>
+//         <View style={styles.header}>
+//           <Text style={styles.title}>Thông tin tài khoản</Text>
+//           <TouchableOpacity
+//             onPress={() => navigation.navigate("Edit", { user })}
+//           >
+//             <IconPen name="edit" size={20} color="#63c9c6" />
+//           </TouchableOpacity>
+//         </View>
+//         <Text style={styles.name}>{user.fullName || user._id}</Text>
+//         <Text style={styles.info}>Số điện thoại: {user.phoneNumber}</Text>
+//       </View>
+
+//       {/* Danh sách địa chỉ */}
+//       <Text style={styles.sectionTitle}>Danh sách địa chỉ</Text>
+//       {user.address && user.address.length > 0 ? (
+//         <FlatList
+//           data={user.address}
+//           renderItem={renderAddressItem}
+//           keyExtractor={(item, index) => index.toString()}
+//           contentContainerStyle={styles.addressList}
+//         />
+//       ) : null}
+//     </View>
+//   );
+// };
