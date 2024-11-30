@@ -30,6 +30,9 @@ import { AuthProvider, AuthContext } from "./services/AuthContext";
 import Badge from "./components/cart/Badge";
 import { getUserCart } from "./api/products/cartsAPI";
 import AddressCheckoutScreen from "./screens/AddressCheckoutScreen";
+import { getStripePublishableKey } from "./api/products/ordersAPI";
+import { AddAddressScreen } from "./screens/user/addAddressScreen";
+import { EditAddressScreen } from "./screens/user/changeAddress";
 
 const TopTab = createMaterialTopTabNavigator();
 const BottomTab = createBottomTabNavigator();
@@ -45,7 +48,7 @@ const AccountTabs = () => (
     </View> */}
     <TopTab.Navigator
       screenOptions={{
-        tabBarStyle: { marginTop: 40 },
+        tabBarStyle: { marginTop: 20 },
       }}
     >
       <TopTab.Screen name="My Orders" component={OrderStack} />
@@ -223,14 +226,43 @@ function StackNavigator() {
             headerTitleAlign: "center",
           }}
         />
+        <Stack.Screen
+          name="AddAddressCheckout"
+          component={AddAddressScreen}
+          options={{
+            headerTitle: "",
+          }}
+        />
+        <Stack.Screen
+          name="EditAddressCheckout"
+          component={EditAddressScreen}
+          options={{
+            headerTitle: "",
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
 export default function App() {
+  const [publishableKey, setPublishableKey] = useState(null);
+
+  const fetchPublishableKey = async () => {
+    try {
+      const storedKey = await getStripePublishableKey();
+      setPublishableKey(storedKey);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPublishableKey();
+  }, []);
+
   return (
-    <StripeProvider publishableKey={process.env.STRIPE_PUBLISHABLE_KEY}>
+    <StripeProvider publishableKey={publishableKey}>
       <AuthProvider>
         <StatusBar barStyle="light-content" backgroundColor="#fff" />
         <StackNavigator />

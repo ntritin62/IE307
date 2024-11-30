@@ -25,7 +25,7 @@ export default function OrderSuccessScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate("Account")}
+          onPress={() => navigation.navigate("My Orders")}
         >
           <Text style={styles.buttonText}>Xem đơn hàng</Text>
           <Icon name="inbox" size={20} color="#fff" />

@@ -14,6 +14,7 @@ const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoadingScreen from "./LoadingScreen";
+import { fetchUserProfile } from "../api/accountAPI/accountAPI";
 
 export default function AddressCheckoutScreen() {
   const [addressList, setAddressList] = useState([]);
@@ -53,16 +54,38 @@ export default function AddressCheckoutScreen() {
     }
   };
 
-  useEffect(() => {
-    fetchAddresses();
-    setSelectedAddressId(route.params?.selectedAddressId);
-  }, []);
-
   const handleSave = () => {
     if (selectedAddressId) {
       navigation.navigate("Checkout", { selectedAddressId });
     }
   };
+
+  const [user, setUser] = useState(null);
+
+  const fetchProfile = async () => {
+    try {
+      const data = await fetchUserProfile();
+      setUser(data.user);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const updateUserAddressFunction = (updatedAddress) => {
+    setUser({
+      ...user,
+      address: user.address.map((item) =>
+        item._id === updatedAddress._id ? updatedAddress : item
+      ),
+    });
+    fetchAddresses();
+  };
+
+  useEffect(() => {
+    fetchAddresses();
+    setSelectedAddressId(route.params?.selectedAddressId);
+    fetchProfile();
+  }, []);
 
   if (addressListLoading) {
     return <LoadingScreen />;
@@ -88,7 +111,18 @@ export default function AddressCheckoutScreen() {
                 containerStyle={styles.radioButton}
               />
 
-              <TouchableOpacity style={styles.editLink}>
+              <TouchableOpacity
+                style={styles.editLink}
+                onPress={() =>
+                  navigation.navigate("EditAddressCheckout", {
+                    address: address.deliveryAddress,
+                    recipient: address.recipientName,
+                    phone: address.contactNumber,
+                    addressId: address._id,
+                    updateUserAddressFunction,
+                  })
+                }
+              >
                 <Text style={styles.editText}>Sửa</Text>
                 <Icon name="edit" size={15} color={colors["primary-700"]} />
               </TouchableOpacity>
@@ -104,7 +138,7 @@ export default function AddressCheckoutScreen() {
       ) : (
         <TouchableOpacity
           style={styles.button}
-          //onPress={() => navigation.navigate("AddAddress")}
+          onPress={() => navigation.navigate("AddAddressCheckout")}
         >
           <Text style={styles.buttonText}>Thêm địa chỉ</Text>
         </TouchableOpacity>

@@ -9,12 +9,14 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
 import { getCurrentUserOrders } from "../../api/order/orderAPI";
 import { OrderItemList } from "../../components/user/OrderItemList";
+import { useIsFocused } from "@react-navigation/native";
 
 export function OrderListScreen() {
   const [activeTab, setActiveTab] = useState("Hoạt động");
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const isFocused = useIsFocused();
 
   // Function to get the token from AsyncStorage
   const getToken = async () => {
@@ -56,8 +58,10 @@ export function OrderListScreen() {
 
   // Fetch orders whenever the active tab changes
   useEffect(() => {
-    fetchOrders();
-  }, [activeTab]);
+    if (isFocused) {
+      fetchOrders();
+    }
+  }, [activeTab, isFocused]);
 
   // Filter orders based on active tab selection
   const filteredData = (orders || []).filter((order) => {

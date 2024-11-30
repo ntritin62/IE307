@@ -55,6 +55,7 @@ export default function CheckoutScreen() {
   const [cartLoading, setCartLoading] = useState(true);
   const [paymentSheetLoading, setPaymentSheetLoading] = useState(false);
   const [paymentClientSecret, setPaymentClientSecret] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const getAddressById = async (addressId) => {
     try {
@@ -113,10 +114,14 @@ export default function CheckoutScreen() {
   };
 
   useEffect(() => {
-    initializePaymentSheet();
+    if (!isInitialized) {
+      initializePaymentSheet();
+      setIsInitialized(true);
+    }
+
     fetchCartTotal();
     fetchAddress(selectedAddressId);
-  }, [selectedAddressId]);
+  }, [selectedAddressId, address]);
 
   const openPaymentSheet = async () => {
     if (!selectedAddressId) {
