@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -7,12 +7,21 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
-import Header from "../components/ui/Header"; 
+import Header from "../components/ui/Header";
 import Icon from "react-native-vector-icons/Ionicons"; // Thư viện Icon
 import BannerSlider from "../components/ui/BannerSlider";
+import { useNavigation } from "@react-navigation/native";
+import { getProducts } from "../api/products/productsAPI";
+import LoadingScreen from "./LoadingScreen";
+import colors from "../constants/colors";
+import format from "../services/formatVND";
 
 const HomePage = () => {
+  const navigation = useNavigation();
+  const [products, setProducts] = useState(null);
+  const [filteredProducts, setFilteredProducts] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const [productsLoading, setProductsLoading] = useState(true);
 
   // Dữ liệu thương hiệu máy tính
   const brands = [
@@ -62,45 +71,29 @@ const HomePage = () => {
     { code: "HOTDEAL", description: "Khuyến mãi nóng" },
   ];
 
-  // Dữ liệu sản phẩm
-  const products = [
-    {
-      name: "Laptop Lenovo IdeaPad",
-      image:
-        "https://laptopaz.vn/media/product/2434_laptopaz_lenovo_ideapad_5_pro_14ach_4.jpg",
-      price: "15,000,000 VND",
-    },
-    {
-      name: "MacBook Pro 13-inch",
-      image:
-        "https://shopdunk.com/images/thumbs/0027507_macbook-pro-13-inch-m2-10-core-8gb-ram-512gb-ssd-chinh-hang-cu-dep.png",
-      price: "25,000,000 VND",
-    },
-    {
-      name: "Dell XPS 13",
-      image:
-        "https://mac24h.vn/images/detailed/90/DELL-XPS-13-9310-2021-H1_vz9k-rf.jpeg",
-      price: "22,000,000 VND",
-    },
-    {
-      name: "ASUS VivoBook",
-      image:
-        "https://dlcdnwebimgs.asus.com/gain/859297d3-da9f-4807-81e8-7a2fdf14204d/",
-      price: "12,500,000 VND",
-    },
-    {
-      name: "Macbook Pro 14",
-      image:
-        "https://taozinsaigon.com/files_upload/product/04_2022/macbook-pro-14-inch-2021-m1-pro-mau-bac.jpg",
-      price: "32,000,000 VND",
-    },
-    {
-      name: "Acer Aspire 7",
-      image:
-        "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:quality(100)/2023_9_9_638298604979455222_acer-aspire-7-gaming-a715-76g-den-dd.jpg",
-      price: "13,900,000 VND",
-    },
-  ];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const storedProducts = await getProducts();
+      setProducts(storedProducts);
+      setFilteredProducts(storedProducts);
+      setProductsLoading(false);
+    };
+
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    const handleSearch = () => {
+      const filteredItems = products.filter((product) =>
+        product.name.toLowerCase().includes(searchText.toLowerCase())
+      );
+      setFilteredProducts(filteredItems);
+    };
+
+    if (!productsLoading) {
+      handleSearch();
+    }
+  }, [searchText]);
 
   // Khai báo ref cho ScrollView của mã giảm giá
   const scrollViewRef = useRef();
@@ -114,6 +107,10 @@ const HomePage = () => {
     }
   };
 
+  if (productsLoading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -121,79 +118,103 @@ const HomePage = () => {
 
       {/* Nội dung chính */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <BannerSlider contentContainerstyle={styles.bannerSlider} />
-        <Text style={styles.sectionTitle}>Thương hiệu</Text>
+        {searchText ? null : (
+          <View>
+            <BannerSlider contentContainerstyle={styles.bannerSlider} />
+            <Text style={styles.sectionTitle}>Thương hiệu</Text>
 
-        {/* Hiển thị các thương hiệu */}
-        <View style={styles.brandGrid}>
-          {brands.map((brand) => (
-            <View
-              key={brand.name}
-              style={[styles.brandItem, { backgroundColor: brand.bgColor }]}
-            >
-              <Image
-                source={{ uri: brand.image }} // Hình ảnh thương hiệu
-                style={styles.brandImage}
-              />
-              <Text style={styles.brandName}>{brand.name}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Mã giảm giá */}
-        <Text style={styles.sectionTitle}>Mã giảm giá</Text>
-
-        <View style={styles.discountContainer}>
-          {/* Mũi tên trái */}
-          <TouchableOpacity
-            onPress={() => scrollTo("left")}
-            style={styles.arrowButton}
-          >
-            <Icon name="arrow-back" size={24} color="#333" />
-          </TouchableOpacity>
-
-          {/* ScrollView cho mã giảm giá */}
-          <ScrollView
-            ref={scrollViewRef}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.discountList}
-          >
-            {discountCodes.map((discount) => (
-              <View key={discount.code} style={styles.discountItem}>
-                <Text style={styles.discountCode}>{discount.code}</Text>
-                <Text style={styles.discountDescription}>
-                  {discount.description}
-                </Text>
-                <TouchableOpacity style={styles.saveButton}>
-                  <Text style={styles.saveButtonText}>Lưu</Text>
+            {/* Hiển thị các thương hiệu */}
+            <View style={styles.brandGrid}>
+              {brands.map((brand) => (
+                <TouchableOpacity
+                  key={brand.name}
+                  style={[styles.brandItem, { backgroundColor: brand.bgColor }]}
+                  onPress={() =>
+                    navigation.navigate("Products", {
+                      brandName: brand.name.toLowerCase(),
+                    })
+                  }
+                >
+                  <Image
+                    source={{ uri: brand.image }} // Hình ảnh thương hiệu
+                    style={styles.brandImage}
+                  />
+                  <Text style={styles.brandName}>{brand.name}</Text>
                 </TouchableOpacity>
-              </View>
-            ))}
-          </ScrollView>
+              ))}
+            </View>
 
-          {/* Mũi tên phải */}
-          <TouchableOpacity
-            onPress={() => scrollTo("right")}
-            style={styles.arrowButton}
-          >
-            <Icon name="arrow-forward" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
+            {/* Mã giảm giá */}
+            <Text style={styles.sectionTitle}>Mã giảm giá</Text>
+
+            <View style={styles.discountContainer}>
+              {/* Mũi tên trái */}
+              <TouchableOpacity
+                onPress={() => scrollTo("left")}
+                style={styles.arrowButton}
+              >
+                <Icon name="arrow-back" size={24} color="#333" />
+              </TouchableOpacity>
+
+              {/* ScrollView cho mã giảm giá */}
+              <ScrollView
+                ref={scrollViewRef}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.discountList}
+              >
+                {discountCodes.map((discount) => (
+                  <View key={discount.code} style={styles.discountItem}>
+                    <Text style={styles.discountCode}>{discount.code}</Text>
+                    <Text style={styles.discountDescription}>
+                      {discount.description}
+                    </Text>
+                    <TouchableOpacity style={styles.saveButton}>
+                      <Text style={styles.saveButtonText}>Lưu</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
+
+              {/* Mũi tên phải */}
+              <TouchableOpacity
+                onPress={() => scrollTo("right")}
+                style={styles.arrowButton}
+              >
+                <Icon name="arrow-forward" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         {/* Sản phẩm */}
         <Text style={styles.sectionTitle}>Sản phẩm</Text>
 
         <View style={styles.productGrid}>
-          {products.map((product) => (
-            <View key={product.name} style={styles.productItem}>
+          {filteredProducts.map((product) => (
+            <TouchableOpacity
+              key={product._id}
+              style={styles.productItem}
+              onPress={() => {
+                navigation.navigate("ProductDetails", {
+                  productId: product._id,
+                });
+              }}
+            >
               <Image
-                source={{ uri: product.image }}
+                source={{ uri: product.imageUrl }}
                 style={styles.productImage}
               />
               <Text style={styles.productName}>{product.name}</Text>
-              <Text style={styles.productPrice}>{product.price}</Text>
-            </View>
+              <Text style={styles.currentPrice}>
+                {format(
+                  product.price - product.price * (product.saleOff / 100)
+                )}
+              </Text>
+              {product.saleOff > 0 ? (
+                <Text style={styles.oldPrice}>{format(product.price)}</Text>
+              ) : null}
+            </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
@@ -271,7 +292,7 @@ const styles = StyleSheet.create({
   saveButton: {
     marginTop: 5,
     padding: 5,
-    backgroundColor: "#007BFF",
+    backgroundColor: colors["primary-600"],
     borderRadius: 5,
   },
   saveButtonText: {
@@ -319,10 +340,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 3,
   },
-  productPrice: {
+  currentPrice: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors["primary-700"],
+  },
+  oldPrice: {
     fontSize: 12,
-    color: "#777",
-    marginTop: 3,
+    color: "#888",
+    textDecorationLine: "line-through",
   },
   bannerSlider: {
     height: 40,
