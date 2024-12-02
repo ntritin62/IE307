@@ -118,9 +118,10 @@ const HomePage = () => {
     <View style={styles.container}>
       {/* Header */}
       <Header onSearch={(text) => setSearchText(text)} />
-      <BannerSlider />
+
       {/* Nội dung chính */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <BannerSlider contentContainerstyle={styles.bannerSlider} />
         <Text style={styles.sectionTitle}>Thương hiệu</Text>
 
         {/* Hiển thị các thương hiệu */}
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   scrollContainer: {
-    padding: 10,
+    padding: 0,
   },
   sectionTitle: {
     fontSize: 18,
@@ -243,6 +244,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginVertical: 20,
+    backgroundColor: "#63c9c6",
+    width: "100%",
+    height: 100,
   },
   discountList: {
     flexDirection: "row",
@@ -319,6 +323,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#777",
     marginTop: 3,
+  },
+  bannerSlider: {
+    height: 40,
   },
 });
 
