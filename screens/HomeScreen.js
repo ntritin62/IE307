@@ -7,7 +7,7 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
-import Header from "../components/ui/Header"; // Giả sử Header đã được tạo như bạn yêu cầu
+import Header from "../components/ui/Header"; 
 import Icon from "react-native-vector-icons/Ionicons"; // Thư viện Icon
 import BannerSlider from "../components/ui/BannerSlider";
 
