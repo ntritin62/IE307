@@ -1,12 +1,13 @@
 import React, { useRef, useEffect } from "react";
 import {
   View,
-  Text,
   Image,
   FlatList,
   StyleSheet,
   Dimensions,
+  TouchableOpacity,
 } from "react-native";
+import Icon from "react-native-vector-icons/Ionicons"; // Thư viện Icon
 
 const { width } = Dimensions.get("window");
 
@@ -44,24 +45,59 @@ const BannerSlider = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Hàm để cuộn trang theo chiều trái hoặc phải
+  const scrollTo = (direction) => {
+    if (direction === "left") {
+      currentIndex.current =
+        (currentIndex.current - 1 + banners.length) % banners.length;
+    } else {
+      currentIndex.current = (currentIndex.current + 1) % banners.length;
+    }
+    flatListRef.current.scrollToIndex({
+      index: currentIndex.current,
+      animated: true,
+    });
+  };
+
   return (
-    <FlatList
-      data={banners}
-      keyExtractor={(item) => item.id.toString()}
-      horizontal
-      ref={flatListRef}
-      pagingEnabled
-      showsHorizontalScrollIndicator={false}
-      renderItem={({ item }) => (
-        <View style={styles.bannerContainer}>
-          <Image source={{ uri: item.image }} style={styles.bannerImage} />
-        </View>
-      )}
-    />
+    <View style={styles.container}>
+      <FlatList
+        data={banners}
+        keyExtractor={(item) => item.id.toString()}
+        horizontal
+        ref={flatListRef}
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <View style={styles.bannerContainer}>
+            <Image source={{ uri: item.image }} style={styles.bannerImage} />
+          </View>
+        )}
+      />
+      {/* Mũi tên trái */}
+      <TouchableOpacity
+        onPress={() => scrollTo("left")}
+        style={[styles.arrowButton, styles.arrowLeft]}
+      >
+        <Icon name="arrow-back" size={24} color="#fff" />
+      </TouchableOpacity>
+      {/* Mũi tên phải */}
+      <TouchableOpacity
+        onPress={() => scrollTo("right")}
+        style={[styles.arrowButton, styles.arrowRight]}
+      >
+        <Icon name="arrow-forward" size={24} color="#fff" />
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   bannerContainer: {
     width: width,
     justifyContent: "center",
@@ -69,8 +105,22 @@ const styles = StyleSheet.create({
   },
   bannerImage: {
     width: width * 1.0,
-    height: 280,
-    borderRadius: 10,
+    height: 200,
+    borderRadius: 0,
+  },
+  arrowButton: {
+    position: "absolute",
+    top: "45%",
+    zIndex: 1,
+    padding: 5,
+  },
+  arrowLeft: {
+    left: 10, // Mũi tên trái nằm bên trái
+    transform: [{ translateY: -12 }], // Căn giữa theo chiều dọc
+  },
+  arrowRight: {
+    right: 10, // Mũi tên phải nằm bên phải
+    transform: [{ translateY: -12 }], // Căn giữa theo chiều dọc
   },
 });
 
