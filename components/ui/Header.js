@@ -40,12 +40,12 @@ const Header = ({ onSearch }) => {
 const styles = StyleSheet.create({
   headerContainer: {
     width: "100%",
-    height: 130, // Điều chỉnh chiều cao của Header
+    height: 135, // Điều chỉnh chiều cao của Header
     justifyContent: "flex-start",
     paddingTop: 40, // Đệm trên (cho các thiết bị có tai thỏ)
     paddingBottom: 0,
     paddingHorizontal: 15,
-    backgroundColor: "#fdf3f4", // Màu pastel tông mát (xanh dương nhạt)
+    backgroundColor: "#63c9c6",
   },
   headerContent: {
     flexDirection: "row",
