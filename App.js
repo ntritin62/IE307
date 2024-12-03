@@ -53,7 +53,6 @@ const AccountTabs = () => (
     >
       <TopTab.Screen name="My Orders" component={OrderStack} />
       <TopTab.Screen name="My Account" component={AccountStack} />
-      <TopTab.Screen name="Sign Out" component={SignOutScreen} />
     </TopTab.Navigator>
   </View>
 );
@@ -238,6 +237,13 @@ function StackNavigator() {
           component={EditAddressScreen}
           options={{
             headerTitle: "",
+          }}
+        />
+        <Stack.Screen
+          name="ConfirmSignOut"
+          component={SignOutScreen}
+          options={{
+            headerShown: false,
           }}
         />
       </Stack.Navigator>

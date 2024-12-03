@@ -4,7 +4,7 @@ import { AuthContext } from "../../services/AuthContext";
 
 const SignOutScreen = ({ navigation }) => {
   const { handleSignOut } = useContext(AuthContext);
-  const handleCancel = () => navigation.navigate("Home");
+  const handleCancel = () => navigation.goBack();
 
   return (
     <View style={styles.container}>
@@ -13,17 +13,23 @@ const SignOutScreen = ({ navigation }) => {
         {/* Company Info */}
         <View style={styles.companyInfo}>
           <Image
-            source={require("../../assets/images/signout.png")}
+            source={require("../../assets/lappu-store-logo.png")}
             style={styles.companyLogo}
           />
-          <Text style={styles.companyTitle}>LAPPU STORE</Text>
+          {/* <Text style={styles.companyTitle}>LAPPU STORE</Text> */}
         </View>
 
         {/* Sign Out Section */}
         <View style={styles.signOutSection}>
           <Text style={styles.heading}>Bạn chắc chắn muốn đăng xuất?</Text>
           {/* Sign Out Button */}
-          <TouchableOpacity style={styles.button} onPress={handleSignOut}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              handleSignOut();
+              navigation.navigate("Home");
+            }}
+          >
             <Text style={styles.buttonText}>Đăng xuất</Text>
           </TouchableOpacity>
           {/* Cancel Button */}
@@ -45,6 +51,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
+    marginVertical: 20,
   },
   mainContent: {
     flex: 1,
@@ -64,8 +71,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   companyLogo: {
-    width: 200,
-    height: 200,
+    width: 135,
+    height: 135,
     resizeMode: "contain",
   },
   companyTitle: {

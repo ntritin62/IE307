@@ -119,14 +119,14 @@ export default function RegisterScreen({ navigation }) {
           <InputComponent
             fieldName="Nhập email"
             fieldIcon="envelope"
-            fieldIconSize={25}
+            fieldIconSize={20}
             fieldValue={email}
             setFieldValue={setEmail}
           />
           <InputComponent
             fieldName="Nhập password"
             fieldIcon="lock"
-            fieldIconSize={30}
+            fieldIconSize={25}
             fieldValue={password}
             setFieldValue={setPassword}
             isSecure={true}
@@ -134,7 +134,7 @@ export default function RegisterScreen({ navigation }) {
           <InputComponent
             fieldName="Xác nhận password"
             fieldIcon="lock"
-            fieldIconSize={30}
+            fieldIconSize={25}
             fieldValue={confirmPassword}
             setFieldValue={setConfirmPassword}
             isSecure={true}

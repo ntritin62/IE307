@@ -145,7 +145,7 @@ export const EditProfileScreen = ({ route, navigation }) => {
         >
           <Text style={styles.changePasswordText}>Đổi mật khẩu</Text>
         </TouchableOpacity>
-        <AddressSection />
+        {/* <AddressSection /> */}
       </View>
     </ScrollView>
   );

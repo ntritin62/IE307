@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     backgroundColor: "#ccc",
-    padding: 1,
+    padding: 11,
     borderRadius: 5,
     marginRight: 10,
   },
@@ -139,5 +139,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#fff",
     fontWeight: "bold",
+    fontSize: 16,
   },
 });

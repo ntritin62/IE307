@@ -96,6 +96,21 @@ export const ProfileScreen = ({ navigation }) => {
     </View>
   );
 
+  const AddressSection = () => (
+    <View style={styles.listContent}>
+      <View style={styles.addressHeader}>
+        <Text style={styles.subtitle}>Địa chỉ</Text>
+        <TouchableOpacity
+          style={styles.addAddressButton}
+          onPress={() => navigation.navigate("AddAddressScreen")}
+        >
+          <Icon name="add-circle-outline" size={20} color="#fff" />
+          <Text style={styles.addAddressButtonText}>Thêm địa chỉ</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       {/* Account info */}
@@ -114,7 +129,8 @@ export const ProfileScreen = ({ navigation }) => {
       </View>
 
       {/* Address List */}
-      <Text style={styles.sectionTitle}>Danh sách địa chỉ</Text>
+      {/* <Text style={styles.sectionTitle}>Danh sách địa chỉ</Text> */}
+      <AddressSection />
       {user.address && user.address.length > 0 ? (
         <FlatList
           data={user.address}
@@ -123,6 +139,13 @@ export const ProfileScreen = ({ navigation }) => {
           contentContainerStyle={styles.addressList}
         />
       ) : null}
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("ConfirmSignOut")}
+      >
+        <Text style={styles.buttonText}>Đăng xuất</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -201,14 +224,6 @@ const styles = StyleSheet.create({
     marginTop: -49,
     padding: 6,
   },
-  addAddressButton: {
-    marginTop: 20,
-    alignSelf: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: "#63c9c6",
-    borderRadius: 5,
-  },
   addAddressText: {
     color: "#fff",
     fontWeight: "bold",
@@ -218,6 +233,46 @@ const styles = StyleSheet.create({
     color: "#aaa",
     textAlign: "center",
     marginTop: 20,
+  },
+  listContent: {
+    width: "100%",
+    marginTop: 20,
+  },
+  subtitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  addressHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  addAddressButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#63c9c6",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 5,
+  },
+  addAddressButtonText: {
+    color: "#fff",
+    marginLeft: 5,
+    fontWeight: "bold",
+  },
+  button: {
+    backgroundColor: "#63c9c6",
+    paddingVertical: 15,
+    borderRadius: 30,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
   },
 });
 

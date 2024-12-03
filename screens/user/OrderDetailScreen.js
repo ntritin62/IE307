@@ -7,9 +7,12 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
+import colors from "../../constants/colors";
+import { useNavigation } from "@react-navigation/native";
 
 export const OrderDetailScreen = ({ route }) => {
   const { order } = route.params;
+  const navigation = useNavigation();
 
   // Hàm tính tổng giá trị đơn hàng
   const calculateTotal = (items) =>
@@ -72,17 +75,32 @@ export const OrderDetailScreen = ({ route }) => {
         {/* Danh sách sản phẩm */}
         <View style={styles.orderItemsWrapper}>
           {order.orderItems.map((item) => (
-            <View style={styles.itemWrapper} key={item._id}>
+            <TouchableOpacity
+              style={styles.itemWrapper}
+              key={item._id}
+              onPress={() =>
+                navigation.navigate("ProductDetails", {
+                  productId: item.product,
+                })
+              }
+            >
               <Image source={{ uri: item.imageUrl }} style={styles.itemImage} />
               <View style={styles.itemInfo}>
                 <Text style={styles.itemName}>{item.name}</Text>
                 {/* <Text style={styles.itemColor}>Màu: {item.color}</Text> */}
-                <Text style={styles.itemText}>Số lượng: 1</Text>
+                <Text style={styles.itemText}>
+                  <Text style={styles.itemTextKey}>Số lượng: </Text>
+                  <Text style={styles.itemTextValue}>1</Text>
+                </Text>
                 {/* Bạn có thể thay đổi số lượng nếu cần */}
-                <Text style={styles.itemText}>Giá: {item.price}</Text>
+
+                <Text style={styles.itemText}>
+                  <Text style={styles.itemTextKey}>Giá: </Text>
+                  <Text style={styles.itemTextValue}>{item.price}</Text>
+                </Text>
                 {/* Sửa từ item.orderItems.price thành item.price */}
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       </View>
@@ -100,7 +118,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   orderWrapper: {
-    marginBottom: 24,
+    // marginBottom: 24,
   },
   orderNumber: {
     fontSize: 20,
@@ -115,7 +133,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   totalPrice: {
-    color: "#4b5d67",
+    color: colors["primary-600"],
   },
   progressTrack: {
     marginVertical: 40,
@@ -163,14 +181,22 @@ const styles = StyleSheet.create({
   },
 
   orderItemsWrapper: {
-    marginTop: 40,
+    // marginTop: 40,
   },
   itemWrapper: {
     flexDirection: "row",
     marginBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f7f7f7",
-    paddingBottom: 16,
+    padding: 16,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    shadowOffset: {
+      height: 1,
+      width: 1,
+    },
+    elevation: 5,
   },
   itemImage: {
     width: 80,
@@ -194,9 +220,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   itemText: {
+    flexDirection: "row",
+  },
+  itemTextKey: {
     fontSize: 14,
-    // fontWeight: "bold",
-    color: "#808080",
+    fontWeight: "600",
+    color: "#000",
+  },
+  itemTextValue: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors["primary-600"],
   },
   itemBtn: {
     marginLeft: 16,

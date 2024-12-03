@@ -70,6 +70,9 @@ const ProductDetailScreen = () => {
           text1: e.response.data.msg,
         });
       }
+      if (e.response.status == 401) {
+        navigation.navigate("Login");
+      }
     }
   };
 

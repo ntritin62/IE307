@@ -107,7 +107,7 @@ export function OrderListScreen() {
       {/* Tab content */}
       <View style={styles.tabContent}>
         {loading ? (
-          <Text style={styles.loadingText}>Loading...</Text>
+          <Text style={styles.loadingText}>Đang tải...</Text>
         ) : error ? (
           <Text style={styles.errorText}>{error}</Text>
         ) : (

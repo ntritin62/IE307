@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import colors from "../../constants/colors";
 
 export function OrderItem({ order }) {
   const navigation = useNavigation();
@@ -14,20 +15,16 @@ export function OrderItem({ order }) {
         <View style={styles.orderInfoGroup}>
           <View style={styles.orderInfoItem}>
             <Text style={styles.textGray}>Ngày đặt:</Text>
-            <Text style={styles.textSilver}>{order.createdAt}</Text>
+            <Text style={styles.text}>{order.createdAt}</Text>
           </View>
           <View style={styles.orderInfoItem}>
             <Text style={styles.textGray}>Tình trạng:</Text>
-            <Text style={styles.textSilver}>{order.status}</Text>
+            <Text style={styles.text}>{order.status}</Text>
           </View>
-          {/* <View style={styles.orderInfoItem}>
-            <Text style={styles.textGray}>Ngày nhận hàng:</Text>
-            <Text style={styles.textSilver}>{order.delivery_date}</Text>
-          </View> */}
-          {/* <View style={styles.orderInfoItem}>
-            <Text style={styles.textGray}>Thanh toán:</Text>
-            <Text style={styles.textSilver}>{order.payment_method}</Text>
-          </View> */}
+          <View style={styles.orderInfoItem}>
+            <Text style={styles.textGray}>Số lượng:</Text>
+            <Text style={styles.text}>{order.orderItems.length}</Text>
+          </View>
         </View>
       </View>
 
@@ -48,13 +45,11 @@ export function OrderItem({ order }) {
                 <Text style={styles.textSilver}>{order.orderItems[0].product.color}</Text>
               </Text> */}
               <Text style={styles.fontBold}>
-                Số lượng: <Text style={styles.textSilver}>1</Text>
+                Số lượng: <Text style={styles.text}>1</Text>
               </Text>
               <Text style={styles.fontBold}>
                 Giá:{" "}
-                <Text style={styles.textSilver}>
-                  {order.orderItems[0].price}
-                </Text>
+                <Text style={styles.text}>{order.orderItems[0].price}</Text>
               </Text>
             </View>
           </View>
@@ -93,8 +88,16 @@ OrderItem.propTypes = {
 const styles = StyleSheet.create({
   orderItemWrapper: {
     marginVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#edeef2",
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    shadowOffset: {
+      height: 1,
+      width: 1,
+    },
+    elevation: 5,
   },
   orderItemTitle: {
     marginBottom: 8,
@@ -102,29 +105,26 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   orderItemDetails: {
-    borderWidth: 1,
-    borderColor: "rgba(0, 0, 0, 0.1)",
     padding: 16,
-    borderRadius: 8,
   },
   orderInfoGroup: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: "column",
   },
   orderInfoItem: {
-    width: "48%",
-    marginBottom: 8,
+    flexDirection: "row",
+    columnGap: 5,
   },
   textGray: {
     color: "#757575",
     fontWeight: "500",
   },
-  textSilver: {
-    color: "#b0b0b0",
+  text: {
+    color: colors["primary-600"],
     fontSize: 14,
+    fontWeight: "bold",
   },
   orderOverview: {
-    marginVertical: 20,
+    marginHorizontal: 10,
   },
   orderOverviewContent: {
     flexDirection: "row",
@@ -133,8 +133,7 @@ const styles = StyleSheet.create({
   orderOverviewImg: {
     width: 80,
     height: 80,
-    borderRadius: 6,
-    overflow: "hidden",
+    resizeMode: "contain",
   },
   objectFitCover: {
     width: "100%",
@@ -158,6 +157,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     justifyContent: "center",
     alignItems: "center",
+    margin: 10,
   },
   viewDetailText: {
     color: "white",

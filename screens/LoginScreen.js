@@ -110,14 +110,14 @@ export default function LoginScreen({ navigation }) {
           <InputComponent
             fieldName="Email"
             fieldIcon="envelope"
-            fieldIconSize={25}
+            fieldIconSize={20}
             fieldValue={email}
             setFieldValue={setEmail}
           />
           <InputComponent
             fieldName="Password"
             fieldIcon="lock"
-            fieldIconSize={30}
+            fieldIconSize={25}
             fieldValue={password}
             setFieldValue={setPassword}
             isSecure={true}
