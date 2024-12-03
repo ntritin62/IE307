@@ -11,16 +11,25 @@ import {
 export const OrderDetailScreen = ({ route }) => {
   const { order } = route.params;
 
-  // Hàm tính tổng giá trị đơn hàng
-  const calculateTotal = (items) =>
-    items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-  // Lấy tổng giá trị từ order.total hoặc tính từ items
-  const totalAmount = order.total || calculateTotal(order.items);
-
   // Danh sách trạng thái và vị trí tương ứng
   const statuses = ["pending", "paid", "delivering", "delivered"];
   const currentStatusIndex = statuses.indexOf(order.status);
+
+  // Hàm chuyển trạng thái sang văn bản hiển thị
+  const getStatusText = (status) => {
+    switch (status) {
+      case "pending":
+        return "Chờ xác nhận";
+      case "paid":
+        return "Chuẩn bị";
+      case "delivering":
+        return "Đang giao";
+      case "delivered":
+        return "Hoàn tất";
+      default:
+        return "Không xác định";
+    }
+  };
 
   return (
     <ScrollView style={styles.page}>
@@ -28,7 +37,9 @@ export const OrderDetailScreen = ({ route }) => {
         {/* Thông tin đơn hàng */}
         <View style={styles.orderWrapper}>
           <Text style={styles.orderNumber}>Mã đơn hàng: {order._id}</Text>
-          <Text style={styles.orderDate}>Ngày đặt: {order.createdAt}</Text>
+          <Text style={styles.orderDate}>
+            Ngày đặt: {new Date(order.createdAt).toLocaleString("vi-VN")}
+          </Text>
           <Text style={styles.total}>
             Tổng tiền: <Text style={styles.totalPrice}>{order.total}</Text>
           </Text>
@@ -62,7 +73,7 @@ export const OrderDetailScreen = ({ route }) => {
                     index <= currentStatusIndex && styles.activeText,
                   ]}
                 >
-                  {status}
+                  {getStatusText(status)}
                 </Text>
               </View>
             ))}
@@ -76,11 +87,8 @@ export const OrderDetailScreen = ({ route }) => {
               <Image source={{ uri: item.imageUrl }} style={styles.itemImage} />
               <View style={styles.itemInfo}>
                 <Text style={styles.itemName}>{item.name}</Text>
-                {/* <Text style={styles.itemColor}>Màu: {item.color}</Text> */}
-                <Text style={styles.itemText}>Số lượng: 1</Text>
-                {/* Bạn có thể thay đổi số lượng nếu cần */}
+                <Text style={styles.itemText}>Số lượng:1</Text>
                 <Text style={styles.itemText}>Giá: {item.price}</Text>
-                {/* Sửa từ item.orderItems.price thành item.price */}
               </View>
             </View>
           ))}
