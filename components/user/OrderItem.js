@@ -6,7 +6,22 @@ import colors from "../../constants/colors";
 
 export function OrderItem({ order }) {
   const navigation = useNavigation();
-  // console.log("Image URL:", order.orderItems[0]?.imageUrl);
+
+  // Hàm chuyển trạng thái sang văn bản hiển thị
+  const getStatusText = (status) => {
+    switch (status) {
+      case "pending":
+        return "Chờ xác nhận";
+      case "paid":
+        return "Đã thanh toán";
+      case "delivering":
+        return "Đang giao";
+      case "delivered":
+        return "Hoàn tất";
+      default:
+        return "Không xác định";
+    }
+  };
 
   return (
     <View style={styles.orderItemWrapper}>
@@ -15,11 +30,13 @@ export function OrderItem({ order }) {
         <View style={styles.orderInfoGroup}>
           <View style={styles.orderInfoItem}>
             <Text style={styles.textGray}>Ngày đặt:</Text>
-            <Text style={styles.text}>{order.createdAt}</Text>
+            <Text style={styles.text}>
+              {new Date(order.createdAt).toLocaleDateString("vi-VN")}
+            </Text>
           </View>
           <View style={styles.orderInfoItem}>
             <Text style={styles.textGray}>Tình trạng:</Text>
-            <Text style={styles.text}>{order.status}</Text>
+            <Text style={styles.text}>{getStatusText(order.status)}</Text>
           </View>
           <View style={styles.orderInfoItem}>
             <Text style={styles.textGray}>Số lượng:</Text>
@@ -40,10 +57,6 @@ export function OrderItem({ order }) {
           <View style={styles.orderOverviewInfo}>
             <Text style={styles.textXl}>{order.orderItems[0].name}</Text>
             <View>
-              {/* <Text style={styles.fontBold}>
-                Màu:{" "}
-                <Text style={styles.textSilver}>{order.orderItems[0].product.color}</Text>
-              </Text> */}
               <Text style={styles.fontBold}>
                 Số lượng: <Text style={styles.text}>1</Text>
               </Text>
