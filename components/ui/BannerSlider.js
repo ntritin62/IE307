@@ -14,18 +14,15 @@ const { width } = Dimensions.get("window");
 const banners = [
   {
     id: 1,
-    image:
-      "https://thietkehaithanh.com/wp-content/uploads/2019/01/thietkehaithanh-banner-laptop-2.png",
+    image: require("../../assets/banner-laptop-1.jpeg"),
   },
   {
     id: 2,
-    image:
-      "https://thietkehaithanh.com/wp-content/uploads/2019/01/thietkehaithanh-banner-laptop-2.png",
+    image: require("../../assets/banner-laptop-2.jpg"),
   },
   {
     id: 3,
-    image:
-      "https://thietkehaithanh.com/wp-content/uploads/2019/01/thietkehaithanh-banner-laptop-2.png",
+    image: require("../../assets/banner-laptop-3.jpg"),
   },
 ];
 
@@ -70,7 +67,7 @@ const BannerSlider = () => {
         showsHorizontalScrollIndicator={false}
         renderItem={({ item }) => (
           <View style={styles.bannerContainer}>
-            <Image source={{ uri: item.image }} style={styles.bannerImage} />
+            <Image source={item.image} style={styles.bannerImage} />
           </View>
         )}
       />
@@ -107,12 +104,15 @@ const styles = StyleSheet.create({
     width: width * 1.0,
     height: 200,
     borderRadius: 0,
+    resizeMode: "stretch",
   },
   arrowButton: {
     position: "absolute",
     top: "45%",
     zIndex: 1,
     padding: 5,
+    backgroundColor: "rgba(52, 52, 52, 0.5)",
+    borderRadius: 15,
   },
   arrowLeft: {
     left: 10, // Mũi tên trái nằm bên trái
